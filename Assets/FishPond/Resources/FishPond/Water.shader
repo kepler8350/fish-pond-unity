@@ -4,8 +4,10 @@ Shader "FishPond/Water"
 {
     Properties
     {
-        _CenterColor ("Center", Color) = (0.11, 0.62, 0.68, 1)
-        _EdgeColor ("Edge", Color) = (0.03, 0.24, 0.32, 1)
+        _CenterColor ("Center", Color) = (0.2, 0.66, 0.68, 1)
+        _EdgeColor ("Edge", Color) = (0.04, 0.26, 0.36, 1)
+        _SandColor ("Sand", Color) = (0.86, 0.8, 0.6, 1)
+        _SandAmount ("Sand Amount", Range(0, 1)) = 0.32
         _CausticColor ("Caustic (A = 세기)", Color) = (0.78, 1, 0.96, 0.32)
         _CausticScale ("Caustic Scale", Float) = 5.5
         _Speed ("Speed", Float) = 0.45
@@ -25,7 +27,8 @@ Shader "FishPond/Water"
             #pragma fragment frag
             #include "UnityCG.cginc"
 
-            fixed4 _CenterColor, _EdgeColor, _CausticColor;
+            fixed4 _CenterColor, _EdgeColor, _CausticColor, _SandColor;
+            float _SandAmount;
             float _CausticScale, _Speed, _Radius;
 
             struct appdata { float4 vertex : POSITION; float2 uv : TEXCOORD0; };
@@ -62,6 +65,13 @@ Shader "FishPond/Water"
                 float alpha = 1.0 - smoothstep(_Radius - 0.012, _Radius, d);
 
                 float3 col = lerp(_CenterColor.rgb, _EdgeColor.rgb, pow(saturate(d / _Radius), 1.6));
+
+                // 모래 바닥: 큰 얼룩 + 물결 자국이 물빛 아래로 비침
+                float patch = 0.5 + 0.25 * sin(p.x * 3.1 + sin(p.y * 2.3) * 1.7) + 0.25 * sin(p.y * 2.7 + sin(p.x * 1.9) * 2.1);
+                float ripple = sin(dot(p, float2(0.8, 0.6)) * 34.0 + sin(p.y * 6.0) * 2.0 + sin(p.x * 4.0) * 1.5);
+                float sand = _SandAmount * saturate(patch) * (1.0 - smoothstep(0.55, 1.0, d / _Radius) * 0.6);
+                col = lerp(col, _SandColor.rgb * (0.92 + 0.08 * ripple), sand);
+                col *= 0.97 + 0.03 * ripple;
                 float t = _Time.y * _Speed;
                 float c = caustic(p * _CausticScale, t);
                 col += _CausticColor.rgb * c * _CausticColor.a * (1.0 - d * 0.5);

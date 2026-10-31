@@ -60,7 +60,6 @@ namespace FishPond
 
             GUILayout.Space(8);
             GUILayout.Label("<b>투사</b>", Rich());
-            settings.roundProjection = GUILayout.Toggle(settings.roundProjection, " 원형 투사 모드 (원 밖은 검정, 통은 원 안쪽)");
             settings.showHandles = GUILayout.Toggle(settings.showHandles, " 뜰채 손잡이 그리기 (실물 뜰채를 쓰면 끄기)");
             settings.calibScale = Slider("크기", settings.calibScale, 0.5f, 1.5f);
             settings.calibAspect = Slider("가로 비율 (원이 타원이면 조정)", settings.calibAspect, 0.8f, 1.2f);
@@ -128,16 +127,31 @@ namespace FishPond
         }
 
         /// <summary>
-        /// 투사 화면 네 귀퉁이(왼쪽 위 1 → 오른쪽 위 2 → 오른쪽 아래 3 → 왼쪽 아래 4)에 십자 표시.
-        /// 추적 프로그램 보정 때 뜰채를 순서대로 이 위에 올려놓습니다.
-        /// 위치는 화면 가장자리에서 5% 안쪽이며, 투사 보정(크기·이동)의 영향을 받지 않습니다.
+        /// 추적 보정 마커 4개. 둥근 화면 안, 대각선 방향(반지름 0.75C)에 놓입니다.
+        /// 순서: 1 왼쪽 위 → 2 오른쪽 위 → 3 오른쪽 아래 → 4 왼쪽 아래.
+        /// 투사 보정(크기·이동)의 영향을 받지 않는 원래 화면 위치이며,
+        /// tools/tracker/ir_tracker.py 의 marker_viewports() 와 같은 식입니다.
         /// </summary>
+        public static Vector2[] MarkerViewports(float aspect)
+        {
+            float m = Mathf.Min(aspect, 1f);          // 화면 세로 = 1 기준, 짧은 변의 절반
+            float r = 0.735f * m;                      // 0.98(원) × 0.75
+            float[] deg = { 135f, 45f, 315f, 225f };
+            var v = new Vector2[4];
+            for (int i = 0; i < 4; i++)
+            {
+                float a = deg[i] * Mathf.Deg2Rad;
+                v[i] = new Vector2(0.5f + r * Mathf.Cos(a) / (2f * aspect), 0.5f - r * Mathf.Sin(a) / 2f);
+            }
+            return v;
+        }
+
         void ToggleCalibrationMarkers()
         {
             if (calibRoot != null) { Destroy(calibRoot); calibRoot = null; return; }
             calibRoot = new GameObject("CalibrationMarkers");
-            var vps = new[] { new Vector2(0.05f, 0.05f), new Vector2(0.95f, 0.05f), new Vector2(0.95f, 0.95f), new Vector2(0.05f, 0.95f) };
-            float size = cam.orthographicSize * 0.08f;
+            var vps = MarkerViewports(cam.aspect);
+            float size = Mathf.Min(halfW, halfH) * 0.07f;
             for (int i = 0; i < 4; i++)
             {
                 var w = cam.ViewportToWorldPoint(new Vector3(vps[i].x, 1f - vps[i].y, 10f));
@@ -149,7 +163,7 @@ namespace FishPond
                 Spr(m, "ring", Art.Ring(0.1f), new Color(1f, 0.85f, 0.3f), 90, Vector2.zero, Vector2.one * size * 1.4f, 0f, 0f);
                 var label = new FloorText(m, "num", 91, new Color(1f, 0.85f, 0.3f), size * 0.9f);
                 label.Text = (i + 1).ToString();
-                label.Place(new Vector2(vps[i].x < 0.5f ? size * 1.4f : -size * 1.4f, vps[i].y < 0.5f ? -size * 1.4f : size * 1.4f), 0f, 0f);
+                label.Place(new Vector2(-w.x, -w.y).normalized * size * 1.5f, 0f, 0f);
             }
         }
     }

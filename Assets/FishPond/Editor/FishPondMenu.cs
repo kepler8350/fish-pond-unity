@@ -84,7 +84,7 @@ namespace FishPond.EditorTools
         [MenuItem("Fish Pond/설정 초기화 (PlayerPrefs)", priority = 40)]
         static void ResetSettings()
         {
-            PlayerPrefs.DeleteKey("FishPond.Settings.v1");
+            PlayerPrefs.DeleteKey("FishPond.Settings.v2");
             Debug.Log("[FishPond] 저장된 운영 설정을 지웠습니다.");
         }
     }

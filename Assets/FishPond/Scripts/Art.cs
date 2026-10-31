@@ -8,7 +8,7 @@ namespace FishPond
     /// 스프라이트는 처음 요청될 때 한 번만 만들고 캐시합니다.
     /// 스프라이트 크기 규칙: 텍스처 가로 = 1 유닛 (PPU = 텍스처 가로 픽셀).
     /// </summary>
-    public static class Art
+    public static partial class Art
     {
         delegate Color PixelFn(float x, float y);
 
@@ -195,6 +195,13 @@ namespace FishPond
             {
                 case SpeciesId.Pufferfish:
                     return 0.95f * Mathf.Pow(s, 0.45f) * Mathf.Lerp(0.6f, 1f, S(u * 2f));
+                case SpeciesId.YellowTang:
+                    return 0.62f * Mathf.Pow(s, 0.6f) * Mathf.Lerp(0.5f, 1f, Mathf.SmoothStep(0f, 1f, u * 1.6f));
+                case SpeciesId.Butterflyfish:
+                case SpeciesId.Angelfish:
+                    return 0.66f * Mathf.Pow(s, 0.55f) * Mathf.Lerp(0.5f, 1f, Mathf.SmoothStep(0f, 1f, u * 1.6f));
+                case SpeciesId.Lionfish:
+                    return 0.55f * Mathf.Pow(s, 0.7f) * Mathf.Lerp(0.55f, 1f, Mathf.SmoothStep(0f, 1f, u * 1.6f));
                 case SpeciesId.BlueTang:
                     return 0.56f * Mathf.Pow(s, 0.7f) * Mathf.Lerp(0.5f, 1f, Mathf.SmoothStep(0f, 1f, u * 1.6f));
                 default:
@@ -208,6 +215,10 @@ namespace FishPond
             {
                 case SpeciesId.Clownfish: return new Color(1f, 0.55f, 0.2f, 0.9f);
                 case SpeciesId.BlueTang: return new Color(0.2f, 0.42f, 0.95f, 0.85f);
+                case SpeciesId.YellowTang: return new Color(1f, 0.88f, 0.25f, 0.9f);
+                case SpeciesId.Butterflyfish: return new Color(1f, 0.85f, 0.3f, 0.85f);
+                case SpeciesId.Angelfish: return new Color(0.25f, 0.4f, 0.95f, 0.85f);
+                case SpeciesId.Lionfish: return new Color(0.98f, 0.9f, 0.85f, 0.7f);
                 default: return new Color(0.95f, 0.85f, 0.55f, 0.85f);
             }
         }
@@ -242,6 +253,27 @@ namespace FishPond
                     if (u > 0.3f && u < 0.62f && rel > 0.55f && rel < 0.8f) return navy;
                     return blue;
                 }
+                case SpeciesId.YellowTang:
+                {
+                    if (u > 0.07f && u < 0.12f && Mathf.Abs(v) < hw * 0.35f) return new Color(0.98f, 0.98f, 0.95f);
+                    return new Color(1f, 0.84f, 0.08f);
+                }
+                case SpeciesId.Butterflyfish:
+                {
+                    if (Mathf.Abs(u - 0.8f) < 0.035f) return new Color(0.07f, 0.05f, 0.05f);
+                    if (u < 0.42f) return new Color(1f, 0.8f, 0.15f);
+                    float rel = Mathf.Abs(v) / Mathf.Max(hw, 0.001f);
+                    if (u < 0.7f && rel > 0.45f && Mathf.Repeat(u * 14f, 1f) < 0.25f) return new Color(0.75f, 0.72f, 0.65f);
+                    return new Color(0.98f, 0.97f, 0.9f);
+                }
+                case SpeciesId.Angelfish:
+                {
+                    if (Mathf.Abs(u - 0.78f) < 0.04f) return new Color(0.05f, 0.07f, 0.2f);
+                    if (u > 0.83f) return new Color(0.2f, 0.35f, 0.85f);
+                    return Mathf.Repeat(u * 9f + v * 1.2f, 1f) < 0.38f ? new Color(1f, 0.85f, 0.2f) : new Color(0.15f, 0.3f, 0.85f);
+                }
+                case SpeciesId.Lionfish:
+                    return Mathf.Repeat(u * 9f - v * 0.6f, 1f) < 0.5f ? new Color(0.68f, 0.16f, 0.12f) : new Color(0.97f, 0.9f, 0.85f);
                 default: // Pufferfish
                 {
                     var tan = new Color(0.9f, 0.78f, 0.45f);
@@ -299,7 +331,7 @@ namespace FishPond
                 float spread = 0.2f + 0.8f * dx;
                 float ny = Mathf.Abs(dy) / (spread * 0.92f);
                 float limit;
-                if (id == SpeciesId.BlueTang) limit = 0.72f + 0.28f * ny * ny;      // 가위 꼬리
+                if (id == SpeciesId.BlueTang || id == SpeciesId.YellowTang) limit = 0.72f + 0.28f * ny * ny; // 가위 꼬리
                 else if (id == SpeciesId.Pufferfish) limit = 0.75f - 0.2f * ny * ny; // 작고 둥근
                 else limit = 0.95f - 0.22f * ny * ny;                                // 둥근 부채
                 float a = S(Mathf.Min((1f - ny) * spread * 30f, (limit - dx) * 64f) + 0.5f);
@@ -315,6 +347,18 @@ namespace FishPond
                 {
                     c = new Color(1f, 0.84f, 0.15f);
                     if (dx > limit - 0.06f || ny > 0.88f) c = new Color(0.04f, 0.07f, 0.22f);
+                }
+                else if (id == SpeciesId.YellowTang) c = new Color(1f, 0.84f, 0.1f);
+                else if (id == SpeciesId.Butterflyfish)
+                {
+                    c = new Color(1f, 0.82f, 0.2f);
+                    if (dx > limit - 0.1f) c = new Color(0.1f, 0.08f, 0.06f);
+                }
+                else if (id == SpeciesId.Angelfish) c = new Color(1f, 0.82f, 0.18f);
+                else if (id == SpeciesId.Lionfish)
+                {
+                    c = Mathf.Repeat(dx * 6f, 1f) < 0.5f ? new Color(0.98f, 0.92f, 0.88f) : new Color(0.7f, 0.25f, 0.2f);
+                    a *= 0.75f;
                 }
                 else c = new Color(0.82f, 0.7f, 0.42f);
 

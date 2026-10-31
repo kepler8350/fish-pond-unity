@@ -42,6 +42,24 @@ namespace FishPond
             return tm;
         }
 
+        SpriteRenderer backdrop;
+
+        /// <summary>글자 뒤에 둥근 어두운 판을 깝니다 (산호 위에서도 잘 읽히게).</summary>
+        public void Backdrop(Vector2 size, Color c)
+        {
+            if (backdrop == null)
+            {
+                var g = new GameObject("backdrop");
+                g.transform.SetParent(go.transform, false);
+                g.transform.localPosition = new Vector3(0f, 0f, 0.002f);
+                backdrop = g.AddComponent<SpriteRenderer>();
+                backdrop.sprite = Art.SoftCircle;
+                backdrop.sortingOrder = main.GetComponent<MeshRenderer>().sortingOrder - 2;
+            }
+            backdrop.transform.localScale = new Vector3(size.x, size.y, 1f);
+            backdrop.color = c;
+        }
+
         public string Text
         {
             get { return main.text; }
@@ -86,7 +104,7 @@ namespace FishPond
     /// <summary>물결, 점수 팝업, 문어 먹물</summary>
     public class Fx
     {
-        enum Kind { Ripple, Pop, Ink }
+        enum Kind { Ripple, Pop, Ink, Bubble }
 
         class Item
         {
@@ -142,6 +160,14 @@ namespace FishPond
             }
         }
 
+        /// <summary>바닥에서 올라오는 공기 방울: 커지면서 옅어짐</summary>
+        public void Bubble(Vector2 p, float size)
+        {
+            var sr = MakeSprite("bubble", Art.Ring(0.18f), 34, p, -0.25f);
+            sr.color = new Color(0.9f, 1f, 1f, 0f);
+            items.Add(new Item { kind = Kind.Bubble, go = sr.gameObject, sr = sr, pos = p, dir = Random.insideUnitCircle * size * 2f, life = 1f, max = size, rate = 1f / Random.Range(1.2f, 2.2f) });
+        }
+
         public void Update(float dt)
         {
             for (int i = items.Count - 1; i >= 0; i--)
@@ -169,6 +195,14 @@ namespace FishPond
                         var p = it.pos + it.dir * age;
                         it.go.transform.localPosition = new Vector3(p.x, p.y, -3f);
                         it.text.Alpha = Mathf.Min(1f, it.life * 2f);
+                        break;
+                    }
+                    case Kind.Bubble:
+                    {
+                        var p = it.pos + it.dir * age;
+                        it.go.transform.localPosition = new Vector3(p.x, p.y, -0.25f);
+                        it.sr.transform.localScale = Vector3.one * it.max * (1f + age * 1.5f);
+                        it.sr.color = new Color(0.9f, 1f, 1f, 0.55f * Mathf.Min(1f, age * 5f) * it.life);
                         break;
                     }
                     case Kind.Ink:

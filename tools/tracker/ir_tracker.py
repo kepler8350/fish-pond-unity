@@ -7,7 +7,7 @@ LED 개수(1~4개)로 플레이어를 구분해 투사 화면 좌표(0~1)로 보
 
 사용법
   1) 보정 (설치 후 한 번):  python ir_tracker.py --calibrate
-     - Unity 게임에서 F2를 눌러 네 귀퉁이 마커(1~4)를 띄웁니다.
+     - Unity 게임에서 F2를 눌러 둥근 화면 안의 보정 마커(1~4)를 띄웁니다.
      - 아무 뜰채나 마커 1 위에 올리고 스페이스, 2·3·4도 같은 순서로 반복합니다.
      - calib.json이 저장됩니다.
   2) 실행:  python ir_tracker.py --show
@@ -26,8 +26,19 @@ import time
 import cv2
 import numpy as np
 
-# Unity FishPondGame.Panel.cs 의 보정 마커 위치와 같아야 합니다 (왼쪽 위 → 오른쪽 위 → 오른쪽 아래 → 왼쪽 아래)
-MARKERS = [(0.05, 0.05), (0.95, 0.05), (0.95, 0.95), (0.05, 0.95)]
+import math
+
+
+def marker_viewports(aspect):
+    """Unity FishPondGame.MarkerViewports() 와 같은 식.
+    둥근 화면 안 대각선 4곳 (왼쪽 위 → 오른쪽 위 → 오른쪽 아래 → 왼쪽 아래), 원점 왼쪽 위."""
+    m = min(aspect, 1.0)
+    r = 0.735 * m
+    out = []
+    for deg in (135, 45, 315, 225):
+        a = math.radians(deg)
+        out.append((0.5 + r * math.cos(a) / (2 * aspect), 0.5 - r * math.sin(a) / 2))
+    return out
 COLORS = [(90, 107, 255), (63, 210, 255), (151, 220, 61), (255, 169, 90)]  # BGR, P1~P4
 
 
@@ -142,9 +153,10 @@ def calibrate(args):
             g = max(groups, key=lambda c: c["area"])
             src.append((g["x"], g["y"]))
             print("  마커 %d 저장: (%.1f, %.1f)" % (len(src), g["x"], g["y"]))
-    H = cv2.getPerspectiveTransform(np.array(src, dtype=np.float32), np.array(MARKERS, dtype=np.float32))
+    markers = marker_viewports(args.aspect)
+    H = cv2.getPerspectiveTransform(np.array(src, dtype=np.float32), np.array(markers, dtype=np.float32))
     with open(args.calib, "w", encoding="utf-8") as f:
-        json.dump({"H": H.tolist(), "camera_points": src, "markers": MARKERS}, f, indent=2)
+        json.dump({"H": H.tolist(), "camera_points": src, "markers": markers, "aspect": args.aspect}, f, indent=2)
     print("보정 완료 → %s" % args.calib)
     cap.release()
     cv2.destroyAllWindows()
@@ -240,7 +252,8 @@ def main():
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=7777)
     ap.add_argument("--calib", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "calib.json"))
-    ap.add_argument("--calibrate", action="store_true", help="네 귀퉁이 보정 모드")
+    ap.add_argument("--aspect", type=float, default=16 / 9, help="Unity 게임 화면 가로/세로 비율 (기본 16:9)")
+    ap.add_argument("--calibrate", action="store_true", help="보정 모드 (둥근 화면 안 마커 4개)")
     ap.add_argument("--show", action="store_true", help="카메라 화면 보기")
     args = ap.parse_args()
     if args.calibrate:

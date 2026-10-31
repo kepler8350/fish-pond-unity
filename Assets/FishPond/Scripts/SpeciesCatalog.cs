@@ -4,7 +4,11 @@ using UnityEngine;
 
 namespace FishPond
 {
-    public enum SpeciesId { Clownfish, BlueTang, Pufferfish, Squid, Octopus, Jellyfish }
+    public enum SpeciesId
+    {
+        Clownfish, BlueTang, Pufferfish, Squid, Octopus, Jellyfish,
+        YellowTang, Butterflyfish, Angelfish, Lionfish, Stingray, SeaTurtle
+    }
 
     /// <summary>
     /// 생물 한 종의 설정. 길이·속도는 모두 "연못 반지름" 기준 비율이라
@@ -52,12 +56,19 @@ namespace FishPond
         {
             return new List<SpeciesDef>
             {
-                Make(SpeciesId.Clownfish,  "흰동가리", 1, 1.00f, 0.12f, 0.30f, 1.00f, true),
-                Make(SpeciesId.BlueTang,   "블루탱",   2, 0.70f, 0.15f, 0.34f, 1.00f, true),
-                Make(SpeciesId.Pufferfish, "복어",     3, 0.45f, 0.12f, 0.18f, 1.00f, true),
-                Make(SpeciesId.Squid,      "오징어",   4, 0.35f, 0.19f, 1.20f, 1.00f, true),
-                Make(SpeciesId.Octopus,    "문어",     5, 0.20f, 0.22f, 0.10f, 1.25f, true),
-                Make(SpeciesId.Jellyfish,  "해파리",   0, 0.00f, 0.15f, 0.06f, 1.00f, false),
+                //                                       점수  등장   길이   속도   잡는시간
+                Make(SpeciesId.Clownfish,     "흰동가리",   1, 1.00f, 0.12f, 0.30f, 1.00f, true),
+                Make(SpeciesId.YellowTang,    "노랑탱",     1, 0.90f, 0.13f, 0.32f, 1.00f, true),
+                Make(SpeciesId.Butterflyfish, "나비고기",   2, 0.70f, 0.12f, 0.28f, 1.00f, true),
+                Make(SpeciesId.BlueTang,      "블루탱",     2, 0.60f, 0.15f, 0.34f, 1.00f, true),
+                Make(SpeciesId.Angelfish,     "엔젤피시",   3, 0.45f, 0.15f, 0.26f, 1.00f, true),
+                Make(SpeciesId.Pufferfish,    "복어",       3, 0.40f, 0.12f, 0.18f, 1.00f, true),
+                Make(SpeciesId.Lionfish,      "쏠배감펭",   4, 0.30f, 0.15f, 0.16f, 1.00f, true),
+                Make(SpeciesId.Squid,         "오징어",     4, 0.30f, 0.19f, 1.20f, 1.00f, true),
+                Make(SpeciesId.Octopus,       "문어",       5, 0.18f, 0.22f, 0.10f, 1.25f, true),
+                Make(SpeciesId.Stingray,      "가오리",     5, 0.20f, 0.22f, 0.20f, 1.20f, true),
+                Make(SpeciesId.SeaTurtle,     "바다거북",   7, 0.10f, 0.25f, 0.10f, 1.40f, true),
+                Make(SpeciesId.Jellyfish,     "해파리",     0, 0.00f, 0.15f, 0.06f, 1.00f, false),
             };
         }
 

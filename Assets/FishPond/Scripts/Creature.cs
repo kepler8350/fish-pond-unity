@@ -163,10 +163,12 @@ namespace FishPond
             if (wanderT <= 0f || (target - pos).magnitude < R * 0.08f) NewTarget(R);
             float desired = Ang(target - pos);
 
+            bool calm = def.id == SpeciesId.SeaTurtle;
+            float turnRate = def.id == SpeciesId.SeaTurtle ? 0.7f : def.id == SpeciesId.Stingray ? 1.1f : 1.8f;
             foreach (var n in g.nets)
             {
                 float d = Vector2.Distance(pos, n.pos);
-                if (n.speed > FishPondGame.FLEE * R && d < g.NETR * 2.8f) { desired = Ang(pos - n.pos); boost = 1f; }
+                if (!calm && n.speed > FishPondGame.FLEE * R && d < g.NETR * 2.8f) { desired = Ang(pos - n.pos); boost = 1f; }
                 if (def.id == SpeciesId.Pufferfish && puffT <= 0f && d < g.NETR * 2.4f && g.IsPlaying)
                 {
                     puffT = 2.6f;
@@ -178,7 +180,7 @@ namespace FishPond
             if (puffT > 0f) { puffT -= dt; puffK = Mathf.MoveTowards(puffK, 1f, dt * 5f); }
             else puffK = Mathf.MoveTowards(puffK, 0f, dt * 1.2f);
 
-            Steer(desired, 1.8f + boost * 4f, dt);
+            Steer(desired, turnRate + boost * 4f, dt);
             float spd = def.speed * R * (1f + boost * 1.8f) * (hold > 0f ? 0.3f : 1f) * (1f - 0.55f * puffK);
             pos += Dir(heading) * spd * dt;
             boost = Mathf.Max(0f, boost - dt * 0.8f);

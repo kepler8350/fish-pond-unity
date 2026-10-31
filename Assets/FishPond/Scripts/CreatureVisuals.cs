@@ -41,6 +41,8 @@ namespace FishPond
                 case SpeciesId.Squid: return new SquidVisual(parent, def.length);
                 case SpeciesId.Octopus: return new OctopusVisual(parent, def.length);
                 case SpeciesId.Jellyfish: return new JellyVisual(parent, def.length);
+                case SpeciesId.Stingray: return new StingrayVisual(parent, def.length);
+                case SpeciesId.SeaTurtle: return new TurtleVisual(parent, def.length);
                 default: return new FishVisual(def.id, parent, def.length);
             }
         }
@@ -149,9 +151,22 @@ namespace FishPond
     // ================================================================ 흰동가리 · 블루탱 · 복어
     public class FishVisual : CreatureVisual
     {
-        readonly Transform tail, finL, finR, body;
+        readonly Transform tail, finL, finR, body, fanL, fanR;
         readonly Part spikes;
         readonly Vector2 finBase;
+
+        static Vector2 TailSize(SpeciesId id)
+        {
+            switch (id)
+            {
+                case SpeciesId.BlueTang: case SpeciesId.YellowTang: return new Vector2(0.3f, 0.42f);
+                case SpeciesId.Pufferfish: return new Vector2(0.2f, 0.26f);
+                case SpeciesId.Lionfish: return new Vector2(0.28f, 0.34f);
+                case SpeciesId.Angelfish: return new Vector2(0.28f, 0.4f);
+                case SpeciesId.Butterflyfish: return new Vector2(0.26f, 0.34f);
+                default: return new Vector2(0.32f, 0.36f);
+            }
+        }
 
         public FishVisual(SpeciesId id, Transform parent, float length) : base(parent, length)
         {
@@ -159,10 +174,7 @@ namespace FishPond
             shadow = SpritePart(root, "shadow", bodySprite, new Color(0f, 0.01f, 0.02f, 0.28f), -5, Vector2.zero, new Vector2(L, L)).r.transform;
 
             tail = Node(root, "tailPivot", new Vector2(-L * 0.47f, 0f));
-            Vector2 ts = id == SpeciesId.BlueTang ? new Vector2(0.3f, 0.42f)
-                       : id == SpeciesId.Pufferfish ? new Vector2(0.2f, 0.26f)
-                       : new Vector2(0.32f, 0.36f);
-            SpritePart(tail, "tail", Art.FishTail(id), Color.white, 1, Vector2.zero, ts * L);
+            SpritePart(tail, "tail", Art.FishTail(id), Color.white, 1, Vector2.zero, TailSize(id) * L);
 
             float hw = Art.FishHalfWidth(id, 0.66f) * 0.25f * L * 0.85f;
             finBase = new Vector2(L * 0.16f, hw);
@@ -171,6 +183,15 @@ namespace FishPond
             var fc = Art.FinColor(id);
             SpritePart(finL, "fin", Art.Circle, fc, 1, new Vector2(-L * 0.05f, L * 0.03f), new Vector2(L * 0.16f, L * 0.07f), 25f);
             SpritePart(finR, "fin", Art.Circle, fc, 1, new Vector2(-L * 0.05f, -L * 0.03f), new Vector2(L * 0.16f, L * 0.07f), -25f);
+
+            // 쏠배감펭: 줄무늬 부채 같은 가슴지느러미
+            if (id == SpeciesId.Lionfish)
+            {
+                fanL = Node(root, "fanL", new Vector2(L * 0.12f, finBase.y * 0.8f));
+                fanR = Node(root, "fanR", new Vector2(L * 0.12f, -finBase.y * 0.8f));
+                SpritePart(fanL, "fan", Art.LionFan, Color.white, 0, Vector2.zero, new Vector2(L * 0.55f, L * 0.55f), 125f);
+                SpritePart(fanR, "fan", Art.LionFan, Color.white, 0, Vector2.zero, new Vector2(L * 0.55f, L * 0.55f), -125f);
+            }
 
             body = SpritePart(root, "body", bodySprite, Color.white, 2, Vector2.zero, new Vector2(L, L)).r.transform;
 
@@ -186,6 +207,12 @@ namespace FishPond
             float f = Mathf.Sin(phase * 0.7f) * 20f;
             finL.localRotation = Quaternion.Euler(0, 0, f);
             finR.localRotation = Quaternion.Euler(0, 0, -f);
+            if (fanL != null)
+            {
+                float g = Mathf.Sin(phase * 0.35f) * 12f;
+                fanL.localRotation = Quaternion.Euler(0, 0, g);
+                fanR.localRotation = Quaternion.Euler(0, 0, -g);
+            }
         }
 
         public override void SetPuff(float k)

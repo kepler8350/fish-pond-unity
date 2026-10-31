@@ -70,7 +70,6 @@ namespace FishPond
 
         float remaining, countT, resultT, startFlashT, clock;
         int lastTick = 99, lastW, lastH;
-        bool lastRound;
 
         TrackingReceiver tracker;
         readonly Dictionary<int, int> grabs = new Dictionary<int, int>();
@@ -141,46 +140,31 @@ namespace FishPond
             RenderSettings.ambientLight = new Color(0.55f, 0.6f, 0.62f);
         }
 
-        // ================================================================ 화면 배치
+        // ================================================================ 화면 배치 (모든 것이 둥근 화면 안)
+        /// <summary>
+        /// 원(반지름 C) 안쪽 배치:
+        ///   0 ~ R(0.66C)     생물이 헤엄치는 바다
+        ///   R ~ C            산호초 고리, 대각선 4곳에 낚시통, 좌우에 타이머
+        /// </summary>
         void Relayout()
         {
-            lastW = Screen.width; lastH = Screen.height; lastRound = settings.roundProjection;
+            lastW = Screen.width; lastH = Screen.height;
             float oldR = R;
             halfH = cam.orthographicSize;
             halfW = halfH * cam.aspect;
-            float M = 2f * Mathf.Min(halfW, halfH);
-            var bp = new Vector2[4];
-            var rot = new float[4];
-
-            if (!settings.roundProjection)
+            circleR = Mathf.Min(halfW, halfH) * 0.98f;
+            bucketR = circleR * 0.14f;
+            float d = circleR * 0.80f;
+            float[] deg = { 225f, 315f, 45f, 135f }; // P1 왼쪽 아래, P2 오른쪽 아래, P3 오른쪽 위, P4 왼쪽 위
+            for (int i = 0; i < 4; i++)
             {
-                bucketR = M * 0.105f;
-                float pad = M * 0.025f;
-                float bx = halfW - pad - bucketR, by = halfH - pad - bucketR;
-                bp[0] = new Vector2(-bx, -by); bp[1] = new Vector2(bx, -by);
-                bp[2] = new Vector2(bx, by); bp[3] = new Vector2(-bx, by);
-                rot[0] = 0f; rot[1] = 0f; rot[2] = 180f; rot[3] = 180f;
-                R = Mathf.Max(M * 0.15f, Mathf.Min(M * 0.45f, bp[0].magnitude - bucketR * 1.25f));
-                circleR = 0f;
+                float a = deg[i] * Mathf.Deg2Rad;
+                var dir = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+                // 글자는 원 중심 쪽이 "위"가 되도록 = 바깥에 선 플레이어가 바로 읽음
+                buckets[i].Layout(dir * d, bucketR, Mathf.Atan2(-dir.y, -dir.x) * Mathf.Rad2Deg - 90f);
             }
-            else
-            {
-                circleR = Mathf.Min(halfW, halfH) * 0.98f;
-                bucketR = circleR * 0.17f;
-                float d = circleR - circleR * 0.04f - bucketR;
-                float[] deg = { 225f, 315f, 45f, 135f };
-                for (int i = 0; i < 4; i++)
-                {
-                    float a = deg[i] * Mathf.Deg2Rad;
-                    var dir = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
-                    bp[i] = dir * d;
-                    rot[i] = Mathf.Atan2(-dir.y, -dir.x) * Mathf.Rad2Deg - 90f;
-                }
-                R = d - bucketR * 0.9f;
-            }
-            NETR = Mathf.Max(M * 0.035f, R * 0.16f);
-
-            for (int i = 0; i < 4; i++) buckets[i].Layout(bp[i], bucketR, rot[i]);
+            R = circleR * 0.66f;
+            NETR = Mathf.Max(circleR * 0.07f, R * 0.16f);
 
             if (oldR > 0f && Mathf.Abs(oldR - R) > 1e-4f)
             {
@@ -189,7 +173,7 @@ namespace FishPond
                 foreach (var n in nets) { n.pos *= k; n.target *= k; }
             }
 
-            cam.backgroundColor = settings.roundProjection ? Color.black : new Color(0.02f, 0.06f, 0.08f);
+            cam.backgroundColor = Color.black;
             BuildEnvironment();
             LayoutTexts();
         }
@@ -198,6 +182,13 @@ namespace FishPond
         {
             stage.localPosition = new Vector3(settings.calibOffsetX, settings.calibOffsetY, 0f);
             stage.localScale = new Vector3(settings.calibScale * settings.calibAspect, settings.calibScale, 1f);
+        }
+
+        /// <summary>원 밖으로 나가지 않게 (여유 margin만큼 안쪽)</summary>
+        public Vector2 KeepInside(Vector2 p, float margin)
+        {
+            float lim = circleR - margin;
+            return p.magnitude > lim ? p.normalized * lim : p;
         }
 
         SpriteRenderer Spr(Transform parent, string name, Sprite sp, Color c, int order, Vector2 pos, Vector2 scale, float rotDeg, float z)
@@ -214,115 +205,164 @@ namespace FishPond
             return sr;
         }
 
-        /// <summary>바닥 모래, 물, 갯바위, 불가사리, 해초</summary>
+        static readonly Color[] CoralColors =
+        {
+            new Color(1f, 0.45f, 0.42f), new Color(1f, 0.62f, 0.28f), new Color(0.98f, 0.42f, 0.7f),
+            new Color(0.68f, 0.48f, 0.98f), new Color(1f, 0.86f, 0.42f), new Color(0.4f, 0.86f, 0.76f),
+            new Color(0.97f, 0.93f, 0.84f), new Color(0.55f, 0.85f, 0.4f)
+        };
+
+        /// <summary>산호초 고리에서 낚시통·타이머 자리를 피해 각도를 고릅니다.</summary>
+        bool ReefAngleFree(float deg)
+        {
+            float bucketGap = Mathf.Asin(Mathf.Clamp01(bucketR / (circleR * 0.8f))) * Mathf.Rad2Deg + 7f;
+            foreach (var b in new[] { 45f, 135f, 225f, 315f })
+                if (Mathf.Abs(Mathf.DeltaAngle(deg, b)) < bucketGap) return false;
+            foreach (var t in new[] { 0f, 180f })
+                if (Mathf.Abs(Mathf.DeltaAngle(deg, t)) < 11f) return false;
+            return true;
+        }
+
+        Vector2 ReefSpot(System.Func<float> rf, float rMin, float rMax)
+        {
+            for (int tries = 0; tries < 40; tries++)
+            {
+                float deg = rf() * 360f;
+                if (!ReefAngleFree(deg)) continue;
+                float r = Mathf.Lerp(rMin, rMax, Mathf.Sqrt(rf()));
+                float a = deg * Mathf.Deg2Rad;
+                return new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+            }
+            return new Vector2(rMax, 0f);
+        }
+
+        /// <summary>모래 바닥, 물, 산호초(산호·말미잘·해초·바위·성게·조개), 가장자리 그늘</summary>
         void BuildEnvironment()
         {
             if (env != null) Destroy(env.gameObject);
             env = new GameObject("Environment").transform;
             env.SetParent(stage, false);
             seaweeds.Clear();
+            swayers.Clear();
             var rnd = new System.Random(7);
             System.Func<float> rf = () => (float)rnd.NextDouble();
-            const float Tau = Mathf.PI * 2f;
+            float C = circleR;
 
-            if (settings.roundProjection)
-                Spr(env, "ground", Art.Circle, new Color(0.13f, 0.12f, 0.09f), 0, Vector2.zero, Vector2.one * circleR * 2f, 0f, 3f);
-            else
-                Spr(env, "ground", Art.SoftCircle, new Color(0.2f, 0.17f, 0.12f), 0, Vector2.zero, Vector2.one * R * 3.6f, 0f, 3f);
-
-            for (int i = 0; i < 220; i++)
-            {
-                float a = rf() * Tau, r = R * (1.1f + rf() * 0.6f);
-                if (settings.roundProjection && r > circleR * 0.96f) continue;
-                Spr(env, "sand", Art.Circle, new Color(0.85f, 0.78f, 0.6f, 0.05f + rf() * 0.1f), 1,
-                    new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r, Vector2.one * R * (0.008f + rf() * 0.02f), 0f, 2.5f);
-            }
-
+            // 바닷물 + 모래 바닥 (셰이더)
             var water = new GameObject("Water");
             water.transform.SetParent(env, false);
             water.transform.localPosition = new Vector3(0f, 0f, 1f);
-            water.transform.localScale = new Vector3(R * 2.04f, R * 2.04f, 1f);
+            water.transform.localScale = new Vector3(C * 2.04f, C * 2.04f, 1f);
             water.AddComponent<MeshFilter>().sharedMesh = Art.Quad;
             var wr = water.AddComponent<MeshRenderer>();
             wr.sharedMaterial = Art.Water;
-            wr.sortingOrder = 2;
+            wr.sortingOrder = 1;
 
-            for (int i = 0; i < 14; i++)
+            // 헤엄치는 바다 바닥의 잔잔한 장식 (생물 아래, 흐리게)
+            for (int i = 0; i < 10; i++)
             {
-                float a = rf() * Tau;
-                var g = new GameObject("seaweed");
+                float a = rf() * Mathf.PI * 2f, r = R * (0.25f + rf() * 0.65f);
+                var p = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+                if (i % 3 == 0) Spr(env, "starfish", Art.Starfish, WithAlpha(CoralColors[rnd.Next(5)], 0.55f), 3, p, Vector2.one * R * 0.05f, rf() * 360f, 0.6f);
+                else if (i % 3 == 1) Spr(env, "scallop", Art.Scallop, new Color(0.95f, 0.88f, 0.8f, 0.5f), 3, p, Vector2.one * R * 0.045f, rf() * 360f, 0.6f);
+                else Spr(env, "pebble", Art.Circle, new Color(0.55f, 0.6f, 0.58f, 0.45f), 3, p, new Vector2(R * 0.04f, R * 0.03f), rf() * 360f, 0.6f);
+            }
+
+            // 바위
+            for (int i = 0; i < 20; i++)
+            {
+                var p = ReefSpot(rf, R * 1.02f, C * 0.95f);
+                float sz = C * (0.05f + rf() * 0.06f), sh = 0.25f + rf() * 0.18f;
+                float rot = rf() * 360f;
+                Spr(env, "rock", Art.Circle, new Color(sh, sh + 0.04f, sh + 0.05f), 14, p, new Vector2(sz, sz * (0.65f + rf() * 0.3f)), rot, 0.3f);
+                Spr(env, "rockLight", Art.Circle, new Color(1f, 1f, 1f, 0.09f), 14, p + new Vector2(-0.2f, 0.25f) * sz, new Vector2(sz * 0.5f, sz * 0.35f), rot, 0.29f);
+            }
+
+            // 모래 위 조개·불가사리
+            for (int i = 0; i < 10; i++)
+            {
+                var p = ReefSpot(rf, R * 1.02f, C * 0.94f);
+                if (i % 2 == 0) Spr(env, "starfish", Art.Starfish, CoralColors[rnd.Next(5)], 15, p, Vector2.one * C * 0.05f, rf() * 360f, 0.28f);
+                else Spr(env, "scallop", Art.Scallop, new Color(0.98f, 0.9f, 0.82f), 15, p, Vector2.one * C * 0.045f, rf() * 360f, 0.28f);
+            }
+
+            // 산호
+            for (int i = 0; i < 40; i++)
+            {
+                var p = ReefSpot(rf, R * 1.04f, C * 0.93f);
+                var col = CoralColors[rnd.Next(CoralColors.Length)];
+                float sz = C * (0.07f + rf() * 0.09f);
+                int kind = rnd.Next(5);
+                Sprite sp;
+                switch (kind)
+                {
+                    case 0: sp = Art.BrainCoral; break;
+                    case 1: sp = Art.Staghorn(rnd.Next(6)); sz *= 1.25f; break;
+                    case 2: sp = Art.SeaFan(rnd.Next(6)); sz *= 1.3f; break;
+                    case 3: sp = Art.TubeSponge(rnd.Next(6)); break;
+                    default: sp = Art.PlateCoral; sz *= 1.15f; break;
+                }
+                // 부채산호는 원 바깥쪽에서 안쪽으로 펼쳐지게
+                float rot = kind == 2 ? Mathf.Atan2(-p.y, -p.x) * Mathf.Rad2Deg - 90f + (rf() - 0.5f) * 40f : rf() * 360f;
+                Spr(env, "coral", sp, col, 16 + rnd.Next(8), p, Vector2.one * sz, rot, 0.25f);
+            }
+
+            // 말미잘 (흔들림)
+            for (int i = 0; i < 5; i++)
+            {
+                var p = ReefSpot(rf, R * 1.06f, C * 0.9f);
+                var col = i % 2 == 0 ? new Color(1f, 0.55f, 0.75f) : new Color(0.7f, 0.55f, 1f);
+                var sr = Spr(env, "anemone", Art.Anemone, col, 25, p, Vector2.one * C * 0.11f, rf() * 360f, 0.2f);
+                swayers.Add(new Swayer { t = sr.transform, baseScale = C * 0.11f, phase = rf() * 10f, baseRot = sr.transform.localEulerAngles.z });
+            }
+
+            // 성게
+            for (int i = 0; i < 7; i++)
+                Spr(env, "urchin", Art.Urchin, Color.white, 26, ReefSpot(rf, R * 1.03f, C * 0.94f), Vector2.one * C * (0.035f + rf() * 0.02f), rf() * 360f, 0.19f);
+
+            // 해초 (흔들림)
+            for (int i = 0; i < 24; i++)
+            {
+                var root = ReefSpot(rf, R * 1.04f, C * 0.94f);
+                var g = new GameObject("kelp");
                 g.transform.SetParent(env, false);
-                g.transform.localPosition = new Vector3(0f, 0f, 0.4f);
+                g.transform.localPosition = new Vector3(0f, 0f, 0.15f);
                 var lr = g.AddComponent<LineRenderer>();
                 lr.useWorldSpace = false;
                 lr.positionCount = weedBuf.Length;
                 lr.sharedMaterial = Art.Unlit;
                 lr.alignment = LineAlignment.TransformZ;
                 lr.numCapVertices = 3;
-                lr.widthCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0.3f));
-                lr.widthMultiplier = R * 0.022f;
-                lr.startColor = new Color(0.12f, 0.42f, 0.25f, 0.9f);
-                lr.endColor = new Color(0.32f, 0.64f, 0.34f, 0.75f);
-                lr.sortingOrder = 6;
+                lr.widthCurve = new AnimationCurve(new Keyframe(0f, 0.6f), new Keyframe(0.4f, 1f), new Keyframe(1f, 0.25f));
+                lr.widthMultiplier = C * (0.018f + rf() * 0.012f);
+                bool brown = rf() < 0.3f;
+                lr.startColor = brown ? new Color(0.45f, 0.38f, 0.12f, 0.95f) : new Color(0.1f, 0.42f, 0.22f, 0.95f);
+                lr.endColor = brown ? new Color(0.7f, 0.62f, 0.25f, 0.8f) : new Color(0.38f, 0.75f, 0.35f, 0.8f);
+                lr.sortingOrder = 27;
                 seaweeds.Add(new Seaweed
                 {
                     line = lr,
-                    root = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * R * 0.95f,
-                    angle = a + Mathf.PI + (rf() - 0.5f) * 0.9f,
-                    length = R * (0.1f + rf() * 0.08f),
+                    root = root,
+                    angle = Mathf.Atan2(-root.y, -root.x) + (rf() - 0.5f) * 1.6f,
+                    length = C * (0.09f + rf() * 0.1f),
                     phase = rf() * 10f
                 });
             }
 
-            for (int ring = 0; ring < 2; ring++)
-            {
-                int n = Mathf.RoundToInt(Tau / 0.075f);
-                for (int i = 0; i < n; i++)
-                {
-                    float a = (i + ring * 0.5f) / n * Tau + (rf() - 0.5f) * 0.03f;
-                    float rr = R * (1.01f + ring * 0.055f + rf() * 0.02f);
-                    var p = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * rr;
-                    var size = new Vector2(R * (0.035f + rf() * 0.022f), R * (0.026f + rf() * 0.016f)) * 2f;
-                    float sh = 0.27f + rf() * 0.2f;
-                    float rot = (a + rf() * 0.6f) * Mathf.Rad2Deg;
-                    Spr(env, "rock", Art.Circle, new Color(sh, sh + 0.03f, sh + 0.025f), 30, p, size, rot, -0.3f);
-                    Spr(env, "rockLight", Art.Circle, new Color(1f, 1f, 1f, 0.1f), 31, p + new Vector2(-0.25f, 0.3f) * size.y, size * 0.5f, rot, -0.31f);
-                }
-            }
-
-            var starColors = new[] { new Color(1f, 0.5f, 0.2f), new Color(0.9f, 0.27f, 0.27f), new Color(0.62f, 0.38f, 0.88f) };
-            for (int i = 0; i < 5; i++)
-            {
-                float a = (i / 5f + rf() * 0.1f) * Tau;
-                Spr(env, "starfish", Art.Starfish, starColors[i % 3], 32,
-                    new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * R * 1.04f, Vector2.one * R * 0.075f, rf() * 360f, -0.32f);
-            }
+            // 가장자리 그늘: 원 밖 검정과 부드럽게 이어짐
+            Spr(env, "edgeShade", Art.EdgeShade, Color.white, 37, Vector2.zero, Vector2.one * C * 2f, 0f, 0.1f);
         }
+
+        static Color WithAlpha(Color c, float a) { c.a = a; return c; }
 
         void LayoutTexts()
         {
-            float M = 2f * Mathf.Min(halfW, halfH);
-            if (settings.roundProjection)
-            {
-                float rr = R * 1.12f + (circleR - R * 1.12f) * 0.5f;
-                float fs = Mathf.Max(0.2f, Mathf.Min(M * 0.06f, (circleR - R * 1.12f) * 0.7f));
-                timerTexts[0].SetHeight(fs); timerTexts[0].Place(new Vector2(-rr, 0f), -90f, -3f);
-                timerTexts[1].SetHeight(fs); timerTexts[1].Place(new Vector2(rr, 0f), 90f, -3f);
-            }
-            else if (halfW - R > M * 0.16f)
-            {
-                float x = R + (halfW - R) * 0.5f;
-                float fs = Mathf.Min(M * 0.075f, (halfW - R) * 0.35f);
-                timerTexts[0].SetHeight(fs); timerTexts[0].Place(new Vector2(-x, 0f), 0f, -3f);
-                timerTexts[1].SetHeight(fs); timerTexts[1].Place(new Vector2(x, 0f), 180f, -3f);
-            }
-            else
-            {
-                float y = R + (halfH - R) * 0.5f;
-                float fs = Mathf.Max(0.2f, Mathf.Min(M * 0.06f, (halfH - R) * 0.9f));
-                timerTexts[0].SetHeight(fs); timerTexts[0].Place(new Vector2(0f, -y), 0f, -3f);
-                timerTexts[1].SetHeight(fs); timerTexts[1].Place(new Vector2(0f, y), 180f, -3f);
-            }
+            float C = circleR;
+            float fs = C * 0.075f;
+            float rr = C * 0.845f;
+            timerTexts[0].SetHeight(fs); timerTexts[0].Place(new Vector2(-rr, 0f), -90f, -3f);
+            timerTexts[1].SetHeight(fs); timerTexts[1].Place(new Vector2(rr, 0f), 90f, -3f);
+            foreach (var t in timerTexts) t.Backdrop(new Vector2(fs * 3.4f, fs * 1.5f), new Color(0.01f, 0.06f, 0.1f, 0.6f));
 
             for (int i = 0; i < 2; i++)
             {
@@ -336,17 +376,54 @@ namespace FishPond
             bigText.Place(Vector2.zero, 0f, -3.2f);
         }
 
+        class Swayer { public Transform t; public float baseScale, phase, baseRot; }
+        readonly List<Swayer> swayers = new List<Swayer>();
+        float bubbleT;
+
+        /// <summary>해초·말미잘 흔들림, 산호초에서 올라오는 거품</summary>
+        void UpdateAmbient(float dt)
+        {
+            foreach (var w in seaweeds)
+            {
+                var p = w.root;
+                float seg = w.length / (weedBuf.Length - 1);
+                for (int k = 0; k < weedBuf.Length; k++)
+                {
+                    float s = k / (weedBuf.Length - 1f);
+                    float a = w.angle + Mathf.Sin(clock * 1.3f + w.phase + s * 2f) * 0.4f * s;
+                    weedBuf[k] = p;
+                    p += new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * seg;
+                }
+                w.line.SetPositions(weedBuf);
+            }
+            foreach (var sw in swayers)
+            {
+                float k = 1f + 0.06f * Mathf.Sin(clock * 1.7f + sw.phase);
+                sw.t.localScale = new Vector3(sw.baseScale * k, sw.baseScale * k, 1f);
+                sw.t.localRotation = Quaternion.Euler(0, 0, sw.baseRot + Mathf.Sin(clock * 0.9f + sw.phase) * 8f);
+            }
+            bubbleT -= dt;
+            if (bubbleT <= 0f)
+            {
+                bubbleT = Random.Range(0.15f, 0.4f);
+                float a = Random.value * Mathf.PI * 2f;
+                float r = Random.Range(R * 0.3f, circleR * 0.9f);
+                fx.Bubble(new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r, circleR * Random.Range(0.01f, 0.022f));
+            }
+        }
+
         // ================================================================ 매 프레임
         void Update()
         {
             float dt = Mathf.Clamp(Time.deltaTime, 1e-4f, 0.05f);
             clock += dt;
-            if (Screen.width != lastW || Screen.height != lastH || settings.roundProjection != lastRound) Relayout();
+            if (Screen.width != lastW || Screen.height != lastH) Relayout();
             ApplyCalibration();
             HandleKeys();
             sfx.volume = settings.volume;
 
             fx.Update(dt);
+            UpdateAmbient(dt);
             if (state != GameState.Paused)
             {
                 UpdateInput(dt);
@@ -457,11 +534,7 @@ namespace FishPond
                 if (n.pointer || n.external) n.pos += (n.target - n.pos) * (1f - Mathf.Exp(-dt * 28f));
                 else n.pos = n.target;
 
-                if (settings.roundProjection)
-                {
-                    if (n.pos.magnitude > circleR) n.pos = n.pos.normalized * circleR;
-                }
-                else n.pos = new Vector2(Mathf.Clamp(n.pos.x, -halfW, halfW), Mathf.Clamp(n.pos.y, -halfH, halfH));
+                n.pos = KeepInside(n.pos, NETR * 0.6f);
 
                 n.vel = (n.pos - old) / dt;
                 n.speed += (n.vel.magnitude - n.speed) * (1f - Mathf.Exp(-dt * 10f));
@@ -600,7 +673,7 @@ namespace FishPond
             n.load.Clear();
             n.fastT = 0f;
             float rot = buckets[i].textRot;
-            fx.Pop(n.pos + Up(rot) * NETR * 1.4f, text, Color.white, rot, NETR * 0.55f);
+            fx.Pop(KeepInside(n.pos + Up(rot) * NETR * 1.4f, NETR * 0.8f), text, Color.white, rot, NETR * 0.55f);
             sfx.Play("drop");
         }
 
@@ -638,7 +711,7 @@ namespace FishPond
             else
             {
                 float rot = buckets[i].textRot;
-                fx.Pop(n.pos + Up(rot) * NETR * 1.4f, "찌릿!", new Color(0.85f, 0.7f, 1f), rot, NETR * 0.55f);
+                fx.Pop(KeepInside(n.pos + Up(rot) * NETR * 1.4f, NETR * 0.8f), "찌릿!", new Color(0.85f, 0.7f, 1f), rot, NETR * 0.55f);
             }
             n.stunT = 1.6f;
             jelly.Bounce(n.pos, R);
@@ -760,20 +833,6 @@ namespace FishPond
         {
             foreach (var n in nets) n.Render(this, clock);
             for (int i = 0; i < 4; i++) buckets[i].SetScore(scores[i], counts[i]);
-
-            foreach (var w in seaweeds)
-            {
-                var p = w.root;
-                float seg = w.length / (weedBuf.Length - 1);
-                for (int k = 0; k < weedBuf.Length; k++)
-                {
-                    float s = k / (weedBuf.Length - 1f);
-                    float a = w.angle + Mathf.Sin(clock * 1.3f + w.phase + s * 2f) * 0.35f * s;
-                    weedBuf[k] = p;
-                    p += new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * seg;
-                }
-                w.line.SetPositions(weedBuf);
-            }
 
             bool showTimer = state == GameState.Countdown || state == GameState.Playing || state == GameState.Paused;
             int t = Mathf.Max(0, Mathf.CeilToInt(remaining));

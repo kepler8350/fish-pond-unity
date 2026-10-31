@@ -7,16 +7,13 @@ namespace FishPond
     [Serializable]
     public class PondSettings
     {
-        const string Key = "FishPond.Settings.v1";
+        const string Key = "FishPond.Settings.v2";
 
         public int durationSec = 90;
-        public int creatureCount = 12;
+        public int creatureCount = 14;
         public int jellyCount = 1;
 
-        [Tooltip("원형 투사 모드: 원 바깥은 완전 검정, 낚시통은 원 안쪽 가장자리")]
-        public bool roundProjection = false;
-
-        // 투사 보정 (화면 전체를 이동·확대·가로세로 보정)
+        // 투사 보정 (둥근 화면 전체를 이동·확대·가로세로 보정)
         public float calibScale = 1f;
         public float calibOffsetX = 0f;
         public float calibOffsetY = 0f;
