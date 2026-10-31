@@ -399,7 +399,10 @@ namespace FishPond
             instance.name = def.prefabOverride.name;
             var t = instance.transform;
             t.localPosition = Vector3.zero;
-            t.localRotation = Quaternion.LookRotation(Vector3.right, Vector3.back) * Quaternion.Euler(def.prefabRotation);
+            // 옆모습: 모델의 오른쪽 옆구리가 카메라를 봄 / 위모습: 모델의 등이 카메라를 봄
+            var baseRot = def.prefabSideView ? Quaternion.LookRotation(Vector3.right, Vector3.up)
+                                             : Quaternion.LookRotation(Vector3.right, Vector3.back);
+            t.localRotation = baseRot * Quaternion.Euler(def.prefabRotation);
             t.localScale = Vector3.one;
 
             // 에셋에 들어 있는 스크립트(데모 이동·군집 등)는 꺼서 게임의 움직임과 싸우지 않게 함
@@ -411,6 +414,7 @@ namespace FishPond
             foreach (var c in instance.GetComponentsInChildren<Collider2D>(true)) c.enabled = false;
 
             renderers = instance.GetComponentsInChildren<Renderer>(true);
+            FixMaterials(renderers);
 
             // 헤엄 애니메이션: 컨트롤러가 비어 있으면 설정의 컨트롤러를 붙이고, 화면 밖이어도 계속 움직이게
             foreach (var anim in instance.GetComponentsInChildren<Animator>(true))
@@ -452,6 +456,46 @@ namespace FishPond
         public override void SetSorting(int baseOrder)
         {
             foreach (var r in renderers) if (r != null) r.sortingOrder = baseOrder + 2;
+        }
+
+        static Shader standard;
+
+        /// <summary>
+        /// 이 프로젝트(Built-in)에서 못 그리는 셰이더(분홍색)를 쓰는 재질은
+        /// 같은 텍스처·색으로 Standard 셰이더 재질로 바꿉니다.
+        /// </summary>
+        static void FixMaterials(Renderer[] rs)
+        {
+            if (standard == null) standard = Shader.Find("Standard");
+            if (standard == null) return;
+            foreach (var r in rs)
+            {
+                if (r == null || r is ParticleSystemRenderer) continue;
+                var mats = r.sharedMaterials;
+                bool changed = false;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    var m = mats[i];
+                    if (m != null && m.shader != null && m.shader.isSupported && m.shader.name != "Hidden/InternalErrorShader") continue;
+                    var nm = new Material(standard) { name = (m != null ? m.name : "Fish") + " (Standard)" };
+                    if (m != null)
+                    {
+                        foreach (var prop in new[] { "_MainTex", "_BaseMap", "_BaseColorMap", "_Albedo" })
+                            if (m.HasProperty(prop) && m.GetTexture(prop) != null) { nm.mainTexture = m.GetTexture(prop); break; }
+                        foreach (var prop in new[] { "_Color", "_BaseColor" })
+                            if (m.HasProperty(prop)) { nm.color = m.GetColor(prop); break; }
+                        if (m.HasProperty("_BumpMap") && m.GetTexture("_BumpMap") != null)
+                        {
+                            nm.SetTexture("_BumpMap", m.GetTexture("_BumpMap"));
+                            nm.EnableKeyword("_NORMALMAP");
+                        }
+                    }
+                    nm.SetFloat("_Glossiness", 0.55f);
+                    mats[i] = nm;
+                    changed = true;
+                }
+                if (changed) r.sharedMaterials = mats;
+            }
         }
 
         public override void SetAlpha(float a)

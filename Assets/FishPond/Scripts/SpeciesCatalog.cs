@@ -42,7 +42,10 @@ namespace FishPond
         [Tooltip("Asset Store 등에서 가져온 프리팹. 비워두면 코드로 그린 그래픽을 씁니다.")]
         public GameObject prefabOverride;
 
-        [Tooltip("프리팹 회전 보정. 기준: 모델의 앞(+Z)이 진행 방향, 위(+Y)가 카메라 쪽")]
+        [Tooltip("켜면 물고기 옆모습이 보이게 눕힙니다 (몸이 납작한 실사 물고기용). 끄면 위에서 내려다본 모습.")]
+        public bool prefabSideView = true;
+
+        [Tooltip("프리팹 회전 보정. 기준: 모델의 앞(+Z)이 진행 방향, 위(+Y)가 등 쪽")]
         public Vector3 prefabRotation = Vector3.zero;
 
         [Tooltip("프리팹 크기 배율")]
