@@ -7,7 +7,8 @@ namespace FishPond
     public enum SpeciesId
     {
         Clownfish, BlueTang, Pufferfish, Squid, Octopus, Jellyfish,
-        YellowTang, Butterflyfish, Angelfish, Lionfish, Stingray, SeaTurtle
+        YellowTang, Butterflyfish, Angelfish, Lionfish, Stingray, SeaTurtle,
+        Sardine
     }
 
     /// <summary>
@@ -47,6 +48,9 @@ namespace FishPond
         [Tooltip("프리팹 크기 배율")]
         public float prefabScale = 1f;
 
+        [Tooltip("프리팹에 애니메이터 컨트롤러가 없을 때 붙일 컨트롤러 (헤엄 애니메이션)")]
+        public RuntimeAnimatorController animatorController;
+
         public SpeciesDef Clone() { return (SpeciesDef)MemberwiseClone(); }
     }
 
@@ -59,6 +63,7 @@ namespace FishPond
                 //                                       점수  등장   길이   속도   잡는시간
                 Make(SpeciesId.Clownfish,     "흰동가리",   1, 1.00f, 0.12f, 0.30f, 1.00f, true),
                 Make(SpeciesId.YellowTang,    "노랑탱",     1, 0.90f, 0.13f, 0.32f, 1.00f, true),
+                Make(SpeciesId.Sardine,       "정어리",     1, 0.80f, 0.14f, 0.36f, 1.00f, true),
                 Make(SpeciesId.Butterflyfish, "나비고기",   2, 0.70f, 0.12f, 0.28f, 1.00f, true),
                 Make(SpeciesId.BlueTang,      "블루탱",     2, 0.60f, 0.15f, 0.34f, 1.00f, true),
                 Make(SpeciesId.Angelfish,     "엔젤피시",   3, 0.45f, 0.15f, 0.26f, 1.00f, true),

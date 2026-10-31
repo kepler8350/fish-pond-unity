@@ -34,7 +34,7 @@ namespace FishPond
         {
             switch (s.id)
             {
-                case SpeciesId.Clownfish: case SpeciesId.YellowTang: case SpeciesId.Butterflyfish:
+                case SpeciesId.Clownfish: case SpeciesId.YellowTang: case SpeciesId.Butterflyfish: case SpeciesId.Sardine:
                 case SpeciesId.BlueTang: case SpeciesId.Angelfish: case SpeciesId.Pufferfish: case SpeciesId.Lionfish:
                     return true;
                 default: return false;

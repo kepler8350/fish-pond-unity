@@ -410,6 +410,15 @@ namespace FishPond
 
             renderers = instance.GetComponentsInChildren<Renderer>(true);
 
+            // 헤엄 애니메이션: 컨트롤러가 비어 있으면 설정의 컨트롤러를 붙이고, 화면 밖이어도 계속 움직이게
+            foreach (var anim in instance.GetComponentsInChildren<Animator>(true))
+            {
+                if (anim.runtimeAnimatorController == null && def.animatorController != null)
+                    anim.runtimeAnimatorController = def.animatorController;
+                anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                anim.applyRootMotion = false;
+            }
+
             // 길이(진행 방향 = 로컬 X)가 L이 되도록 맞추고 가운데 정렬
             bool has = false;
             Vector3 min = Vector3.zero, max = Vector3.zero;

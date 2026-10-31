@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
@@ -118,20 +120,129 @@ namespace FishPond.EditorTools
         }
 
         // ---------------------------------------------------------------- 기타
-        [MenuItem("Fish Pond/생물 설정 에셋 만들기 (에셋 교체용)", priority = 20)]
-        static void CreateCatalog()
+        static SpeciesCatalog LoadOrCreateCatalog()
         {
-            var existing = AssetDatabase.LoadAssetAtPath<SpeciesCatalog>(CatalogPath);
-            if (existing == null)
+            var cat = AssetDatabase.LoadAssetAtPath<SpeciesCatalog>(CatalogPath);
+            if (cat == null)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(CatalogPath));
-                existing = ScriptableObject.CreateInstance<SpeciesCatalog>();
-                AssetDatabase.CreateAsset(existing, CatalogPath);
+                cat = ScriptableObject.CreateInstance<SpeciesCatalog>();
+                AssetDatabase.CreateAsset(cat, CatalogPath);
                 AssetDatabase.SaveAssets();
-                Debug.Log("[FishPond] 생물 설정 에셋을 만들었습니다. 각 생물의 Prefab Override에 모델을 끌어다 놓으세요.");
             }
-            Selection.activeObject = existing;
-            EditorGUIUtility.PingObject(existing);
+            // 새로 추가된 생물이 있으면 목록에 보충
+            foreach (var d in SpeciesDefaults.Create())
+                if (!cat.species.Exists(s => s.id == d.id)) cat.species.Add(d);
+            return cat;
+        }
+
+        [MenuItem("Fish Pond/생물 설정 에셋 열기 (에셋 교체용)", priority = 20)]
+        static void CreateCatalog()
+        {
+            var cat = LoadOrCreateCatalog();
+            EditorUtility.SetDirty(cat);
+            AssetDatabase.SaveAssets();
+            Selection.activeObject = cat;
+            EditorGUIUtility.PingObject(cat);
+        }
+
+        // 가져온 에셋의 파일 이름에서 찾을 단어 (앞쪽이 우선)
+        static readonly Dictionary<SpeciesId, string[]> Keywords = new Dictionary<SpeciesId, string[]>
+        {
+            { SpeciesId.Angelfish, new[] { "EmperorAngelfish", "Emperor", "Angelfish" } },
+            { SpeciesId.Sardine, new[] { "Sardine" } },
+            { SpeciesId.Clownfish, new[] { "Clownfish", "Clown_fish", "Clown" } },
+            { SpeciesId.BlueTang, new[] { "BlueTang", "Blue_Tang", "Blue Tang", "Dory" } },
+            { SpeciesId.YellowTang, new[] { "YellowTang", "Yellow_Tang", "Yellow Tang" } },
+            { SpeciesId.Butterflyfish, new[] { "Butterflyfish", "Butterfly_fish" } },
+            { SpeciesId.Pufferfish, new[] { "Pufferfish", "Puffer" } },
+            { SpeciesId.Lionfish, new[] { "Lionfish", "Lion_fish" } },
+            { SpeciesId.SeaTurtle, new[] { "SeaTurtle", "Sea_Turtle", "Turtle" } },
+            { SpeciesId.Stingray, new[] { "Stingray", "Manta" } },
+            { SpeciesId.Octopus, new[] { "Octopus" } },
+            { SpeciesId.Squid, new[] { "Squid" } },
+            { SpeciesId.Jellyfish, new[] { "Jellyfish" } },
+        };
+
+        /// <summary>
+        /// Asset Store·Sketchfab 등에서 가져온 모델을 이름으로 찾아 생물에 연결합니다.
+        /// 프리팹을 먼저 찾고, 없으면 모델(FBX 등)을 씁니다. 헤엄 애니메이터 컨트롤러도 함께 찾습니다.
+        /// </summary>
+        [MenuItem("Fish Pond/가져온 실사 에셋 연결하기", priority = 19)]
+        public static void AutoLink()
+        {
+            var cat = LoadOrCreateCatalog();
+            var log = new StringBuilder("[FishPond] 실사 에셋 연결 결과\n");
+            int linked = 0;
+            foreach (var kv in Keywords)
+            {
+                var def = cat.species.Find(s => s.id == kv.Key);
+                if (def == null) continue;
+                GameObject model = null;
+                string used = null;
+                foreach (var kw in kv.Value)
+                {
+                    model = FindModel("t:Prefab", kw) ?? FindModel("t:Model", kw);
+                    if (model != null) { used = kw; break; }
+                }
+                if (model == null) continue;
+                def.prefabOverride = model;
+                var ctrl = FindController(used);
+                if (ctrl != null) def.animatorController = ctrl;
+                linked++;
+                log.AppendLine("  " + def.displayName + " ← " + AssetDatabase.GetAssetPath(model) + (ctrl != null ? "  (애니메이션: " + ctrl.name + ")" : ""));
+            }
+            EditorUtility.SetDirty(cat);
+            AssetDatabase.SaveAssets();
+            if (linked == 0) log.AppendLine("  연결할 모델을 찾지 못했습니다. 에셋을 먼저 가져오세요 (Window > Package Management > My Assets).");
+            Debug.Log(log.ToString());
+            Selection.activeObject = cat;
+        }
+
+        static GameObject FindModel(string filter, string keyword)
+        {
+            GameObject best = null;
+            int bestScore = int.MinValue;
+            foreach (var guid in AssetDatabase.FindAssets(filter))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                if (path.StartsWith("Assets/FishPond/", StringComparison.Ordinal)) continue;
+                var file = Path.GetFileNameWithoutExtension(path);
+                if (file.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) < 0) continue;
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (go == null || go.GetComponentInChildren<Renderer>(true) == null) continue;
+                int score = 0;
+                if (go.GetComponentInChildren<SkinnedMeshRenderer>(true) != null) score += 10;   // 움직이는 모델 우선
+                if (go.GetComponentInChildren<Animator>(true) != null) score += 5;
+                if (path.IndexOf("demo", StringComparison.OrdinalIgnoreCase) >= 0) score -= 5;
+                if (path.IndexOf("LOD", StringComparison.OrdinalIgnoreCase) >= 0) score -= 2;
+                score -= file.Length / 8;                                                      // 짧은 이름 우선
+                if (score > bestScore) { bestScore = score; best = go; }
+            }
+            return best;
+        }
+
+        static RuntimeAnimatorController FindController(string keyword)
+        {
+            RuntimeAnimatorController best = null;
+            int bestScore = int.MinValue;
+            foreach (var guid in AssetDatabase.FindAssets("t:AnimatorController"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                if (path.StartsWith("Assets/FishPond/", StringComparison.Ordinal)) continue;
+                var file = Path.GetFileNameWithoutExtension(path);
+                if (file.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) < 0 && path.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) < 0) continue;
+                int score = 0;
+                if (file.IndexOf("swim", StringComparison.OrdinalIgnoreCase) >= 0) score += 10;
+                if (file.IndexOf("long", StringComparison.OrdinalIgnoreCase) >= 0) score += 2;
+                if (file.IndexOf("turn", StringComparison.OrdinalIgnoreCase) >= 0) score -= 5;
+                if (score > bestScore)
+                {
+                    var c = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(path);
+                    if (c != null) { bestScore = score; best = c; }
+                }
+            }
+            return best;
         }
 
         [MenuItem("Fish Pond/무료 물고기 에셋 (Asset Store) 열기", priority = 21)]
