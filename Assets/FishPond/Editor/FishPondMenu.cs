@@ -198,6 +198,7 @@ namespace FishPond.EditorTools
                     def.prefabRotation = Vector3.zero;
                 }
                 def.prefabOverride = model;
+                ApplyKnownFix(model, ref def.prefabSideView, ref def.prefabRotation);
                 var ctrl = FindController(used);
                 if (ctrl != null) def.animatorController = ctrl;
                 linked++;
@@ -216,6 +217,7 @@ namespace FishPond.EditorTools
             {
                 if (cat.sharkPrefab != shark) { cat.sharkSideView = false; cat.sharkRotation = Vector3.zero; }
                 cat.sharkPrefab = shark;
+                ApplyKnownFix(shark, ref cat.sharkSideView, ref cat.sharkRotation);
                 var sc = FindController("Shark");
                 if (sc != null) cat.sharkController = sc;
                 int fm = RepairMaterials(shark);
@@ -365,6 +367,30 @@ namespace FishPond.EditorTools
                 dir = parent == null ? null : parent.Replace('\\', '/');
             }
             return null;
+        }
+
+        /// <summary>
+        /// Sketchfab 모델마다 앞·위 축이 제각각이라, 확인한 모델은 회전 보정값을 미리 넣어 둡니다.
+        /// (기준: 머리 = 진행 방향, 옆모습은 등이 위 / 위모습은 등이 화면 쪽)
+        /// </summary>
+        struct Fix { public bool side; public Vector3 rot; public Fix(bool s, float x, float y, float z) { side = s; rot = new Vector3(x, y, z); } }
+        static readonly Dictionary<string, Fix> KnownFixes = new Dictionary<string, Fix>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "clownfish",                              new Fix(true, -90f, 0f, 0f) },
+            { "blue_tang_low_res",                      new Fix(true, 90f, 0f, 0f) },
+            { "minna_no_ennichi_pufferfish",            new Fix(true, -90f, 0f, 0f) },
+            { "oxidane_-_yellow_tang",                  new Fix(true, 0f, 0f, 90f) },
+            { "lined_butterflyfish",                    new Fix(true, 0f, 0f, 90f) },
+            { "model_53a_-_flatback_sea_turtle",        new Fix(false, 0f, 90f, 0f) },
+            { "great_white_shark",                      new Fix(false, 0f, 0f, 180f) },
+            { "octopus",                                new Fix(false, 0f, 0f, 0f) },
+        };
+
+        static void ApplyKnownFix(GameObject model, ref bool side, ref Vector3 rot)
+        {
+            Fix f;
+            var stem = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(model));
+            if (KnownFixes.TryGetValue(stem, out f)) { side = f.side; rot = f.rot; }
         }
 
         static GameObject FindModel(string filter, string keyword)

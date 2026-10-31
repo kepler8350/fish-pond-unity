@@ -46,7 +46,7 @@ namespace FishPond
                 items.Add(new Item { name = "상어 (Shark)", prefab = cat.sharkPrefab, side = cat.sharkSideView, rot = cat.sharkRotation, scale = cat.sharkScale, ctrl = cat.sharkController });
 
             int cols = 4;
-            float cellW = 4.2f, cellH = 2.4f;
+            float cellW = 4.2f, cellH = 3.6f;
             int rows = Mathf.CeilToInt(items.Count / (float)cols);
             for (int i = 0; i < items.Count; i++)
             {
@@ -56,9 +56,22 @@ namespace FishPond
                 holder.position = pos;
                 Renderer[] rs;
                 ModelFit.Spawn(items[i].prefab, holder, 2.6f, items[i].side, items[i].rot, items[i].scale, items[i].ctrl, out rs);
+                // 확인용: 가장 긴 변이 칸에 맞게 다시 맞춤 (축이 틀린 모델도 크기가 비슷하게 보이도록)
+                bool has = false; Bounds b = new Bounds();
+                foreach (var r in rs) { if (r == null) continue; if (!has) { b = r.bounds; has = true; } else b.Encapsulate(r.bounds); }
+                if (has)
+                {
+                    float m = Mathf.Max(b.size.x, b.size.y);
+                    if (m > 0.0001f)
+                    {
+                        float k = 2.6f / m;
+                        holder.localScale = Vector3.one * k;
+                        holder.position = pos + (pos - b.center) * k;
+                    }
+                }
 
                 var label = new GameObject("label");
-                label.transform.position = pos + new Vector3(0f, -0.95f, -2f);
+                label.transform.position = pos + new Vector3(0f, -1.55f, -2f);
                 var tm = label.AddComponent<TextMesh>();
                 tm.text = (i + 1) + ". " + items[i].name + "  →";
                 tm.characterSize = 0.09f;
