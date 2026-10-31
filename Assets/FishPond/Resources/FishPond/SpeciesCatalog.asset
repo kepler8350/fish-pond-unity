@@ -60,7 +60,7 @@ MonoBehaviour:
     speed: 0.28
     holdMultiplier: 1
     catchable: 1
-    prefabOverride: {fileID: 0}
+    prefabOverride: {fileID: -6689036041284674117, guid: b58480c35efe0734f9d84311b58975ef, type: 3}
     prefabSideView: 1
     prefabRotation: {x: 0, y: 0, z: 0}
     prefabScale: 1
@@ -73,7 +73,7 @@ MonoBehaviour:
     speed: 0.34
     holdMultiplier: 1
     catchable: 1
-    prefabOverride: {fileID: 0}
+    prefabOverride: {fileID: -6689036041284674117, guid: 22cf4d38416fb9c4b8bc6728608f86f5, type: 3}
     prefabSideView: 1
     prefabRotation: {x: 0, y: 0, z: 0}
     prefabScale: 1
@@ -151,8 +151,8 @@ MonoBehaviour:
     speed: 0.2
     holdMultiplier: 1.2
     catchable: 1
-    prefabOverride: {fileID: 0}
-    prefabSideView: 1
+    prefabOverride: {fileID: -6689036041284674117, guid: 3e93ac80569db134f95f50675e27cd5f, type: 3}
+    prefabSideView: 0
     prefabRotation: {x: 0, y: 0, z: 0}
     prefabScale: 1
     animatorController: {fileID: 0}
@@ -164,8 +164,8 @@ MonoBehaviour:
     speed: 0.1
     holdMultiplier: 1.4
     catchable: 1
-    prefabOverride: {fileID: 0}
-    prefabSideView: 1
+    prefabOverride: {fileID: 8128668236925612103, guid: ffb4dc58ab392b84188d9585befe155b, type: 3}
+    prefabSideView: 0
     prefabRotation: {x: 0, y: 0, z: 0}
     prefabScale: 1
     animatorController: {fileID: 0}
@@ -177,8 +177,13 @@ MonoBehaviour:
     speed: 0.06
     holdMultiplier: 1
     catchable: 0
-    prefabOverride: {fileID: 0}
+    prefabOverride: {fileID: 8128668236925612103, guid: addcc4c31c8649e49b7c98622fb8de2a, type: 3}
     prefabSideView: 1
     prefabRotation: {x: 0, y: 0, z: 0}
     prefabScale: 1
     animatorController: {fileID: 0}
+  sharkPrefab: {fileID: 8128668236925612103, guid: 8d90ce8fb0bcbed4290e5eaf9fb0f15e, type: 3}
+  sharkSideView: 0
+  sharkRotation: {x: 0, y: 0, z: -90}
+  sharkScale: 1
+  sharkController: {fileID: 0}
