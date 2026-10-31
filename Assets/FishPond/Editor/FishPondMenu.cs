@@ -182,7 +182,7 @@ namespace FishPond.EditorTools
                 string used = null;
                 foreach (var kw in kv.Value)
                 {
-                    model = FindModel("t:Prefab", kw) ?? FindModel("t:Model", kw);
+                    model = FindModel("t:Prefab", kw) ?? FindModel("t:GameObject", kw);
                     if (model != null) { used = kw; break; }
                 }
                 if (model == null) continue;
@@ -195,6 +195,18 @@ namespace FishPond.EditorTools
             EditorUtility.SetDirty(cat);
             AssetDatabase.SaveAssets();
             if (linked == 0) log.AppendLine("  연결할 모델을 찾지 못했습니다. 에셋을 먼저 가져오세요 (Window > Package Management > My Assets).");
+            // 진단: 가져온 에셋 폴더의 모델·프리팹 목록
+            log.AppendLine("가져온 모델·프리팹 (FishPond 제외):");
+            int shown = 0;
+            foreach (var guid in AssetDatabase.FindAssets("t:GameObject"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                if (path.StartsWith("Assets/FishPond/", StringComparison.Ordinal) || !path.StartsWith("Assets/", StringComparison.Ordinal)) continue;
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                bool r = go != null && go.GetComponentInChildren<Renderer>(true) != null;
+                log.AppendLine("  " + path + (r ? "" : "  (렌더러 없음)"));
+                if (++shown >= 40) { log.AppendLine("  ..."); break; }
+            }
             Debug.Log(log.ToString());
             Selection.activeObject = cat;
         }
@@ -212,6 +224,10 @@ namespace FishPond.EditorTools
                 var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
                 if (go == null || go.GetComponentInChildren<Renderer>(true) == null) continue;
                 int score = 0;
+                string lower = file.ToLowerInvariant();
+                if (lower.Contains("swim")) score += 20;                                        // 헤엄 동작 우선
+                foreach (var bad in new[] { "attack", "turn", "eat", "idle", "dead", "bone", "rig", "skeleton", "collider" })
+                    if (lower.Contains(bad)) score -= 15;
                 if (go.GetComponentInChildren<SkinnedMeshRenderer>(true) != null) score += 10;   // 움직이는 모델 우선
                 if (go.GetComponentInChildren<Animator>(true) != null) score += 5;
                 if (path.IndexOf("demo", StringComparison.OrdinalIgnoreCase) >= 0) score -= 5;
