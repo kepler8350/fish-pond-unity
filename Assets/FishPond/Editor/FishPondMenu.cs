@@ -110,6 +110,9 @@ namespace FishPond.EditorTools
                 var report = BuildPipeline.BuildPlayer(opts);
                 bool ok = report.summary.result == BuildResult.Succeeded;
                 Debug.Log("[FishPond] " + productName + " 빌드 " + (ok ? "성공" : "실패: " + report.summary.result) + " → " + exePath);
+                // CC BY 3D 모델 출처 표기를 실행파일 옆에 함께 넣음
+                if (ok && File.Exists("CREDITS.md"))
+                    File.Copy("CREDITS.md", Path.Combine(Path.GetDirectoryName(exePath), "CREDITS.md"), true);
                 return ok;
             }
             finally
