@@ -38,8 +38,8 @@ namespace FishPond
 
             handlePivot = new GameObject("handle").transform;
             handlePivot.SetParent(go.transform, false);
-            Sprite("stick", handlePivot, Art.Square, new Color(0.79f, 0.66f, 0.47f), 58, new Vector2(1.65f, 0f), new Vector2(1.3f, 0.15f));
-            Sprite("grip", handlePivot, Art.Square, color, 59, new Vector2(2.15f, 0f), new Vector2(0.6f, 0.22f));
+            Sprite("stick", handlePivot, Art.Square, new Color(0.79f, 0.66f, 0.47f), 35, new Vector2(1.65f, 0f), new Vector2(1.3f, 0.15f));
+            Sprite("grip", handlePivot, Art.Square, color, 36, new Vector2(2.15f, 0f), new Vector2(0.6f, 0.22f));
 
             rim = Sprite("rim", go.transform, Art.Ring(0.12f), color, 60, Vector2.zero, Vector2.one * 2.04f);
 

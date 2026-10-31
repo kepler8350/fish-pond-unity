@@ -215,7 +215,7 @@ namespace FishPond
         /// <summary>산호초 고리에서 낚시통·타이머 자리를 피해 각도를 고릅니다.</summary>
         bool ReefAngleFree(float deg)
         {
-            float bucketGap = Mathf.Asin(Mathf.Clamp01(bucketR / (circleR * 0.8f))) * Mathf.Rad2Deg + 7f;
+            float bucketGap = Mathf.Asin(Mathf.Clamp01(bucketR / (circleR * 0.8f))) * Mathf.Rad2Deg + 2f;
             foreach (var b in new[] { 45f, 135f, 225f, 315f })
                 if (Mathf.Abs(Mathf.DeltaAngle(deg, b)) < bucketGap) return false;
             foreach (var t in new[] { 0f, 180f })
@@ -269,9 +269,9 @@ namespace FishPond
             }
 
             // 바위
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 26; i++)
             {
-                var p = ReefSpot(rf, R * 1.02f, C * 0.95f);
+                var p = ReefSpot(rf, R * 1.02f, C * 0.97f);
                 float sz = C * (0.05f + rf() * 0.06f), sh = 0.25f + rf() * 0.18f;
                 float rot = rf() * 360f;
                 Spr(env, "rock", Art.Circle, new Color(sh, sh + 0.04f, sh + 0.05f), 14, p, new Vector2(sz, sz * (0.65f + rf() * 0.3f)), rot, 0.3f);
@@ -286,12 +286,13 @@ namespace FishPond
                 else Spr(env, "scallop", Art.Scallop, new Color(0.98f, 0.9f, 0.82f), 15, p, Vector2.one * C * 0.045f, rf() * 360f, 0.28f);
             }
 
-            // 산호
-            for (int i = 0; i < 40; i++)
+            // 산호: 바깥쪽은 크고 빽빽하게, 안쪽 가장자리는 작게
+            for (int i = 0; i < 95; i++)
             {
-                var p = ReefSpot(rf, R * 1.04f, C * 0.93f);
+                var p = ReefSpot(rf, R * 1.03f, C * 0.96f);
                 var col = CoralColors[rnd.Next(CoralColors.Length)];
-                float sz = C * (0.07f + rf() * 0.09f);
+                float outer = Mathf.InverseLerp(R, C, p.magnitude);
+                float sz = C * (0.06f + rf() * 0.07f + outer * 0.07f);
                 int kind = rnd.Next(5);
                 Sprite sp;
                 switch (kind)
@@ -308,9 +309,9 @@ namespace FishPond
             }
 
             // 말미잘 (흔들림)
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 8; i++)
             {
-                var p = ReefSpot(rf, R * 1.06f, C * 0.9f);
+                var p = ReefSpot(rf, R * 1.06f, C * 0.92f);
                 var col = i % 2 == 0 ? new Color(1f, 0.55f, 0.75f) : new Color(0.7f, 0.55f, 1f);
                 var sr = Spr(env, "anemone", Art.Anemone, col, 25, p, Vector2.one * C * 0.11f, rf() * 360f, 0.2f);
                 swayers.Add(new Swayer { t = sr.transform, baseScale = C * 0.11f, phase = rf() * 10f, baseRot = sr.transform.localEulerAngles.z });
@@ -321,9 +322,9 @@ namespace FishPond
                 Spr(env, "urchin", Art.Urchin, Color.white, 26, ReefSpot(rf, R * 1.03f, C * 0.94f), Vector2.one * C * (0.035f + rf() * 0.02f), rf() * 360f, 0.19f);
 
             // 해초 (흔들림)
-            for (int i = 0; i < 24; i++)
+            for (int i = 0; i < 34; i++)
             {
-                var root = ReefSpot(rf, R * 1.04f, C * 0.94f);
+                var root = ReefSpot(rf, R * 1.04f, C * 0.95f);
                 var g = new GameObject("kelp");
                 g.transform.SetParent(env, false);
                 g.transform.localPosition = new Vector3(0f, 0f, 0.15f);

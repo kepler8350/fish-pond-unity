@@ -243,7 +243,7 @@ namespace FishPond
                 return Make("edgeshade", 256, 256, Center, (x, y) =>
                 {
                     float r = Vector2.Distance(new Vector2(x, y), new Vector2(128, 128)) / 127f;
-                    float t = S((r - 0.86f) / 0.14f);
+                    float t = S((r - 0.93f) / 0.07f);
                     return new Color(0f, 0.02f, 0.04f, t * t * (3f - 2f * t) * (r > 1f ? 0f : 0.85f));
                 });
             }
