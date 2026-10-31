@@ -629,12 +629,12 @@ namespace FishPond
         protected SpeciesDef PickSpecies(System.Predicate<SpeciesDef> allow)
         {
             float total = 0f;
-            foreach (var s in species) if (s.catchable && s.spawnWeight > 0f && allow(s)) total += s.spawnWeight;
+            foreach (var s in species) if (s.catchable && s.spawnWeight > 0f && s.prefabOverride != null && allow(s)) total += s.spawnWeight;
             if (total <= 0f) return null;
             float r = Random.value * total;
             foreach (var s in species)
             {
-                if (!s.catchable || s.spawnWeight <= 0f || !allow(s)) continue;
+                if (!s.catchable || s.spawnWeight <= 0f || s.prefabOverride == null || !allow(s)) continue;
                 r -= s.spawnWeight;
                 if (r <= 0f) return s;
             }
@@ -643,7 +643,7 @@ namespace FishPond
 
         protected Creature SpawnAt(SpeciesDef def, Vector2 p, int zone)
         {
-            if (def == null) return null;
+            if (def == null || def.prefabOverride == null) return null;
             var c = new Creature(def, stage, p) { zone = zone };
             creatures.Add(c);
             fx.Ripple(p, R * 0.08f, new Color(0.8f, 0.97f, 0.95f));

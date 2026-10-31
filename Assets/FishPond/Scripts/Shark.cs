@@ -13,7 +13,7 @@ namespace FishPond
         public float heading;
         public readonly float length;         // 스테이지 단위 몸길이
 
-        readonly Transform tail, body, shadow;
+        readonly Transform shadow;
         Vector2 target;
         float wanderT, cooldown, phase, chomp;
         Creature prey;
@@ -28,13 +28,7 @@ namespace FishPond
             go.transform.SetParent(parent, false);
 
             shadow = MakeSprite("shadow", Art.SharkBody, new Color(0f, 0.01f, 0.03f, 0.35f), 8, Vector2.zero, new Vector2(1f, 1f)).transform;
-            tail = new GameObject("tailPivot").transform;
-            tail.SetParent(go.transform, false);
-            tail.localPosition = new Vector2(-0.47f, 0f);
-            MakeSprite("tail", Art.SharkTail, Color.white, 31, Vector2.zero, new Vector2(0.32f, 0.42f)).transform.SetParent(tail, false);
-            body = MakeSprite("body", Art.SharkBody, Color.white, 32, Vector2.zero, Vector2.one).transform;
-
-            // 실사 상어 모델이 설정되어 있으면 그림 대신 모델 사용 (그림자는 그대로)
+            // 실사 상어 모델 (그림자만 그림으로 그림)
             var cat = SpeciesCatalog.Load();
             if (cat != null && cat.sharkPrefab != null)
             {
@@ -43,8 +37,6 @@ namespace FishPond
                 Renderer[] rs;
                 ModelFit.Spawn(cat.sharkPrefab, holder, 1f, cat.sharkSideView, cat.sharkRotation, cat.sharkScale, cat.sharkController, out rs);
                 foreach (var r in rs) if (r != null) r.sortingOrder = 32;
-                tail.gameObject.SetActive(false);
-                body.gameObject.SetActive(false);
                 hasModel = true;
             }
         }
@@ -140,9 +132,6 @@ namespace FishPond
             t.localPosition = new Vector3(pos.x, pos.y, -0.4f);
             t.localRotation = Quaternion.Euler(0, 0, heading * Mathf.Rad2Deg);
             t.localScale = new Vector3(length, length, hasModel ? length : 1f);
-            tail.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(phase) * (prey != null ? 26f : 16f));
-            body.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(phase + Mathf.PI) * 3f);
-            body.localScale = new Vector3(1f + chomp * 0.08f, 1f - chomp * 0.06f, 1f);
             float c = Mathf.Cos(-heading), s = Mathf.Sin(-heading);
             var off = new Vector2(0.18f, -0.26f) * 0.5f;
             shadow.localPosition = new Vector3(off.x * c - off.y * s, off.x * s + off.y * c, 0.02f);

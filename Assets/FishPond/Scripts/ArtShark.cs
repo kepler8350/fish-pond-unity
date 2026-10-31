@@ -55,24 +55,6 @@ namespace FishPond
         }
 
         /// <summary>상어 꼬리: 초승달 모양, 피벗 = 오른쪽 가운데</summary>
-        public static Sprite SharkTail
-        {
-            get
-            {
-                return Make("sharktail", 64, 64, new Vector2(1f, 0.5f), (x, y) =>
-                {
-                    float dx = (64f - x) / 64f, dy = (y - 32f) / 32f;
-                    float spread = 0.18f + 0.82f * dx;
-                    float ny = Mathf.Abs(dy) / (spread * 0.95f);
-                    float limit = 0.5f + 0.5f * Mathf.Pow(ny, 1.4f);
-                    float a = S(Mathf.Min((1f - ny) * spread * 30f, (limit - dx) * 64f) + 0.5f);
-                    var c = Color.Lerp(new Color(0.42f, 0.48f, 0.54f), new Color(0.3f, 0.34f, 0.38f), dx);
-                    return WithA(c, a);
-                });
-            }
-        }
-
-        /// <summary>원의 왼쪽 절반 (가운데 선 쪽은 부드럽게)</summary>
         public static Sprite HalfDiscLeft
         {
             get

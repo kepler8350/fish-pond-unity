@@ -35,16 +35,8 @@ namespace FishPond
 
         public static CreatureVisual Create(SpeciesDef def, Transform parent)
         {
-            if (def.prefabOverride != null) return new PrefabVisual(def, parent, def.length);
-            switch (def.id)
-            {
-                case SpeciesId.Squid: return new SquidVisual(parent, def.length);
-                case SpeciesId.Octopus: return new OctopusVisual(parent, def.length);
-                case SpeciesId.Jellyfish: return new JellyVisual(parent, def.length);
-                case SpeciesId.Stingray: return new StingrayVisual(parent, def.length);
-                case SpeciesId.SeaTurtle: return new TurtleVisual(parent, def.length);
-                default: return new FishVisual(def.id, parent, def.length);
-            }
+            // 모든 생물은 가져온 3D 에셋으로만 그립니다 (에셋이 없는 종은 등장하지 않음)
+            return new PrefabVisual(def, parent, def.length);
         }
 
         // ------------------------------------------------------------ 구성 도우미
@@ -149,253 +141,20 @@ namespace FishPond
     }
 
     // ================================================================ 흰동가리 · 블루탱 · 복어
-    public class FishVisual : CreatureVisual
-    {
-        readonly Transform tail, finL, finR, body, fanL, fanR;
-        readonly Part spikes;
-        readonly Vector2 finBase;
-
-        static Vector2 TailSize(SpeciesId id)
-        {
-            switch (id)
-            {
-                case SpeciesId.BlueTang: case SpeciesId.YellowTang: return new Vector2(0.3f, 0.42f);
-                case SpeciesId.Pufferfish: return new Vector2(0.2f, 0.26f);
-                case SpeciesId.Lionfish: return new Vector2(0.28f, 0.34f);
-                case SpeciesId.Angelfish: return new Vector2(0.28f, 0.4f);
-                case SpeciesId.Butterflyfish: return new Vector2(0.26f, 0.34f);
-                default: return new Vector2(0.32f, 0.36f);
-            }
-        }
-
-        public FishVisual(SpeciesId id, Transform parent, float length) : base(parent, length)
-        {
-            var bodySprite = Art.FishBody(id);
-            shadow = SpritePart(root, "shadow", bodySprite, new Color(0f, 0.01f, 0.02f, 0.28f), -5, Vector2.zero, new Vector2(L, L)).r.transform;
-
-            tail = Node(root, "tailPivot", new Vector2(-L * 0.47f, 0f));
-            SpritePart(tail, "tail", Art.FishTail(id), Color.white, 1, Vector2.zero, TailSize(id) * L);
-
-            float hw = Art.FishHalfWidth(id, 0.66f) * 0.25f * L * 0.85f;
-            finBase = new Vector2(L * 0.16f, hw);
-            finL = Node(root, "finL", finBase);
-            finR = Node(root, "finR", new Vector2(finBase.x, -finBase.y));
-            var fc = Art.FinColor(id);
-            SpritePart(finL, "fin", Art.Circle, fc, 1, new Vector2(-L * 0.05f, L * 0.03f), new Vector2(L * 0.16f, L * 0.07f), 25f);
-            SpritePart(finR, "fin", Art.Circle, fc, 1, new Vector2(-L * 0.05f, -L * 0.03f), new Vector2(L * 0.16f, L * 0.07f), -25f);
-
-            // 쏠배감펭: 줄무늬 부채 같은 가슴지느러미
-            if (id == SpeciesId.Lionfish)
-            {
-                fanL = Node(root, "fanL", new Vector2(L * 0.12f, finBase.y * 0.8f));
-                fanR = Node(root, "fanR", new Vector2(L * 0.12f, -finBase.y * 0.8f));
-                SpritePart(fanL, "fan", Art.LionFan, Color.white, 0, Vector2.zero, new Vector2(L * 0.55f, L * 0.55f), 125f);
-                SpritePart(fanR, "fan", Art.LionFan, Color.white, 0, Vector2.zero, new Vector2(L * 0.55f, L * 0.55f), -125f);
-            }
-
-            body = SpritePart(root, "body", bodySprite, Color.white, 2, Vector2.zero, new Vector2(L, L)).r.transform;
-
-            if (id == SpeciesId.Pufferfish)
-                spikes = SpritePart(root, "spikes", Art.PufferSpikes, new Color(1, 1, 1, 0), 3, Vector2.zero, new Vector2(L * 1.05f, L * 0.62f));
-        }
-
-        public override void Animate(float dt, float swim, float worldScale)
-        {
-            phase += dt * (6f + swim * 14f);
-            tail.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(phase) * (20f + swim * 12f));
-            body.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(phase + Mathf.PI) * 3f);
-            float f = Mathf.Sin(phase * 0.7f) * 20f;
-            finL.localRotation = Quaternion.Euler(0, 0, f);
-            finR.localRotation = Quaternion.Euler(0, 0, -f);
-            if (fanL != null)
-            {
-                float g = Mathf.Sin(phase * 0.35f) * 12f;
-                fanL.localRotation = Quaternion.Euler(0, 0, g);
-                fanR.localRotation = Quaternion.Euler(0, 0, -g);
-            }
-        }
-
-        public override void SetPuff(float k)
-        {
-            if (spikes == null) return;
-            float sx = 1f + 0.2f * k, sy = 1f + 0.75f * k;
-            body.localScale = new Vector3(L * sx, L * sy, 1f);
-            shadow.localScale = body.localScale;
-            spikes.r.transform.localScale = new Vector3(L * 1.05f * sx, L * 0.62f * sy, 1f);
-            finL.localPosition = new Vector2(finBase.x, finBase.y * sy);
-            finR.localPosition = new Vector2(finBase.x, -finBase.y * sy);
-            spikes.c0 = new Color(1, 1, 1, k);
-            var c = spikes.c0; c.a *= alpha; spikes.sr.color = c;
-        }
-    }
-
-    // ================================================================ 오징어
-    public class SquidVisual : CreatureVisual
-    {
-        readonly LineRenderer[] arms = new LineRenderer[10];
-        readonly Vector3[] buf = new Vector3[10];
-        readonly Transform body;
-        float squish;
-
-        public SquidVisual(Transform parent, float length) : base(parent, length)
-        {
-            shadow = SpritePart(root, "shadow", Art.SquidBody, new Color(0f, 0.01f, 0.02f, 0.25f), -5, Vector2.zero, new Vector2(L, L)).r.transform;
-            var club = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(0.7f, 0.55f), new Keyframe(0.86f, 1.7f), new Keyframe(1f, 0.3f));
-            for (int i = 0; i < 10; i++)
-            {
-                bool tentacle = i >= 8;
-                arms[i] = LinePart(root, tentacle ? "tentacle" : "arm", buf.Length,
-                    new Color(0.97f, 0.8f, 0.78f, 0.95f), new Color(0.95f, 0.68f, 0.66f, 0.85f),
-                    (tentacle ? 0.022f : 0.036f) * L, tentacle ? club : Taper(0.25f), 0);
-            }
-            body = SpritePart(root, "body", Art.SquidBody, Color.white, 2, Vector2.zero, new Vector2(L, L)).r.transform;
-        }
-
-        public override void Animate(float dt, float swim, float worldScale)
-        {
-            phase += dt * (3f + swim * 6f);
-            UpdateWidths(worldScale);
-            float spread = 1f - 0.65f * squish;
-            for (int i = 0; i < 10; i++)
-            {
-                bool tentacle = i >= 8;
-                float off = tentacle ? (i == 8 ? -0.25f : 0.25f) : (i / 7f - 0.5f) * 2f;
-                var p = new Vector2(-0.47f * L, off * 0.07f * L);
-                float baseAng = Mathf.PI + off * 0.45f * spread;
-                float len = (tentacle ? 0.55f : 0.3f) * L * (1f + 0.15f * squish);
-                float seg = len / (buf.Length - 1);
-                for (int k = 0; k < buf.Length; k++)
-                {
-                    float s = k / (buf.Length - 1f);
-                    float ang = baseAng + Mathf.Sin(phase + i * 0.8f + s * 3f) * 0.25f * s;
-                    buf[k] = p;
-                    p += Dir(ang) * seg;
-                }
-                arms[i].SetPositions(buf);
-            }
-        }
-
-        public override void SetSquish(float k)
-        {
-            squish = k;
-            body.localScale = new Vector3(L * (1f - 0.12f * k), L * (1f + 0.12f * k), 1f);
-        }
-    }
-
-    // ================================================================ 문어
-    public class OctopusVisual : CreatureVisual
-    {
-        static readonly float[] BaseDeg = { 25f, -25f, 68f, -68f, 112f, -112f, 155f, -155f };
-        readonly LineRenderer[] arms = new LineRenderer[8];
-        readonly Vector3[] buf = new Vector3[12];
-        readonly Vector2 origin;
-        float dash;
-
-        public OctopusVisual(Transform parent, float length) : base(parent, length)
-        {
-            origin = new Vector2(0.04f * L, 0f);
-            var mantlePos = new Vector2(-0.16f * L, 0f);
-            var mantleScale = new Vector2(0.56f * L, 0.44f * L);
-            shadow = SpritePart(root, "shadow", Art.SoftCircle, new Color(0f, 0.01f, 0.02f, 0.35f), -5, mantlePos, mantleScale * 1.6f).r.transform;
-            for (int i = 0; i < 8; i++)
-                arms[i] = LinePart(root, "arm", buf.Length, Art.OctopusColor, new Color(0.98f, 0.66f, 0.55f, 1f), 0.075f * L, Taper(0.12f), 0);
-            SpritePart(root, "mantle", Art.OctopusMantle, Color.white, 2, mantlePos, mantleScale);
-            SpritePart(root, "eyeL", Art.OctopusEye, Color.white, 3, new Vector2(0.05f * L, 0.1f * L), new Vector2(0.09f * L, 0.09f * L));
-            SpritePart(root, "eyeR", Art.OctopusEye, Color.white, 3, new Vector2(0.05f * L, -0.1f * L), new Vector2(0.09f * L, 0.09f * L));
-        }
-
-        public override void SetDash(float k) { dash = k; }
-
-        public override void Animate(float dt, float swim, float worldScale)
-        {
-            phase += dt * (1.4f + swim * 6f);
-            UpdateWidths(worldScale);
-            for (int i = 0; i < 8; i++)
-            {
-                float a0 = BaseDeg[i] * Mathf.Deg2Rad;
-                float sign = a0 > 0f ? 1f : -1f;
-                float a = Mathf.Lerp(a0, sign * Mathf.PI * 0.94f, dash);
-                float len = 0.5f * L * (1f - 0.15f * dash);
-                float seg = len / (buf.Length - 1);
-                var p = origin + Dir(a) * 0.06f * L;
-                for (int k = 0; k < buf.Length; k++)
-                {
-                    float s = k / (buf.Length - 1f);
-                    float curl = Mathf.Sin(phase + i * 1.7f + s * 3.2f) * (0.55f + swim * 0.8f) * s * (1f - dash * 0.7f)
-                               + sign * 0.6f * s * s * (1f - dash);
-                    buf[k] = p;
-                    p += Dir(a + curl) * seg;
-                }
-                arms[i].SetPositions(buf);
-            }
-        }
-    }
-
-    // ================================================================ 해파리
-    public class JellyVisual : CreatureVisual
-    {
-        readonly LineRenderer[] tentacles = new LineRenderer[8];
-        readonly LineRenderer[] oral = new LineRenderer[4];
-        readonly Vector3[] buf = new Vector3[12];
-        readonly Transform bell;
-
-        public JellyVisual(Transform parent, float length) : base(parent, length)
-        {
-            SpritePart(root, "glow", Art.SoftCircle, new Color(0.75f, 0.6f, 1f, 0.22f), -2, Vector2.zero, new Vector2(1.9f * L, 1.9f * L));
-            for (int i = 0; i < tentacles.Length; i++)
-                tentacles[i] = LinePart(root, "tentacle", buf.Length, new Color(0.88f, 0.78f, 1f, 0.6f), new Color(0.8f, 0.7f, 1f, 0.05f), 0.012f * L, Taper(0.4f), 0);
-            for (int i = 0; i < oral.Length; i++)
-                oral[i] = LinePart(root, "oralArm", buf.Length, new Color(1f, 0.72f, 0.86f, 0.6f), new Color(1f, 0.8f, 0.9f, 0.15f), 0.06f * L, Taper(0.2f), 1);
-            bell = SpritePart(root, "bell", Art.JellyBell, Color.white, 2, Vector2.zero, new Vector2(L, L)).r.transform;
-        }
-
-        public override void Animate(float dt, float swim, float worldScale)
-        {
-            phase += dt;
-            UpdateWidths(worldScale);
-            float pulse = Mathf.Sin(phase * Mathf.PI * 2f / 1.8f);
-            float k = 1f - 0.1f * Mathf.Max(0f, pulse);
-            bell.localScale = new Vector3(L * k, L * k, 1f);
-
-            for (int i = 0; i < tentacles.Length; i++)
-            {
-                float th = Mathf.PI + (i / (tentacles.Length - 1f) - 0.5f) * 2.2f;
-                var p = Dir(th) * 0.4f * L * k;
-                float len = 0.95f * L, seg = len / (buf.Length - 1);
-                for (int j = 0; j < buf.Length; j++)
-                {
-                    float s = j / (buf.Length - 1f);
-                    float ang = Mathf.PI + (th - Mathf.PI) * 0.3f + Mathf.Sin(phase * 2.2f + i + s * 4f) * 0.35f * s;
-                    buf[j] = p;
-                    p += Dir(ang) * seg;
-                }
-                tentacles[i].SetPositions(buf);
-            }
-            for (int i = 0; i < oral.Length; i++)
-            {
-                var p = new Vector2(0f, (i - 1.5f) * 0.05f * L);
-                float len = 0.55f * L, seg = len / (buf.Length - 1);
-                for (int j = 0; j < buf.Length; j++)
-                {
-                    float s = j / (buf.Length - 1f);
-                    float ang = Mathf.PI + (i - 1.5f) * 0.12f + Mathf.Sin(phase * 1.6f + i * 1.3f + s * 6f) * 0.5f * s;
-                    buf[j] = p;
-                    p += Dir(ang) * seg;
-                }
-                oral[i].SetPositions(buf);
-            }
-        }
-    }
-
     // ================================================================ Asset Store 프리팹
     public class PrefabVisual : CreatureVisual
     {
         readonly GameObject instance;
         readonly Renderer[] renderers;
+        readonly Transform pivot;      // 옆모습 물고기를 진행 방향 축으로 뒤집는 받침
+        readonly bool sideView;
+        float roll, rollTarget;
 
         public PrefabVisual(SpeciesDef def, Transform parent, float length) : base(parent, length)
         {
-            instance = ModelFit.Spawn(def.prefabOverride, root, L, def.prefabSideView, def.prefabRotation, def.prefabScale, def.animatorController, out renderers);
+            pivot = Node(root, "pivot", Vector2.zero);
+            sideView = def.prefabSideView;
+            instance = ModelFit.Spawn(def.prefabOverride, pivot, L, def.prefabSideView, def.prefabRotation, def.prefabScale, def.animatorController, out renderers);
         }
 
         public override void SetSorting(int baseOrder)
@@ -410,6 +169,19 @@ namespace FishPond
             if (instance.activeSelf != on) instance.SetActive(on);
         }
 
-        public override void Animate(float dt, float swim, float worldScale) { }
+        /// <summary>
+        /// 옆모습 물고기가 왼쪽으로 헤엄치면 배가 위로 가므로(뒤집힘),
+        /// 진행 방향 축으로 반 바퀴 돌려 항상 등이 화면 위쪽을 향하게 합니다.
+        /// </summary>
+        public override void Animate(float dt, float swim, float worldScale)
+        {
+            if (!sideView) return;
+            float upY = root.up.y;
+            if (upY < -0.15f) rollTarget = 180f;
+            else if (upY > 0.15f) rollTarget = 0f;
+            if (roll == rollTarget && dt > 0f) return;
+            roll = dt <= 0f ? rollTarget : Mathf.MoveTowards(roll, rollTarget, 600f * dt);
+            pivot.localRotation = Quaternion.Euler(roll, 0f, 0f);
+        }
     }
 }
