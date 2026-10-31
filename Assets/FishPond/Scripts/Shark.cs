@@ -61,7 +61,7 @@ namespace FishPond
 
             // 사냥감 고르기 (진행 중이고 배부르지 않을 때)
             if (prey != null && (prey.state != Creature.State.Swim || prey.zone != 0 || prey.fadingOut || !g.Alive(prey))) prey = null;
-            if (g.IsPlaying && cooldown <= 0f && prey == null) prey = g.NearestPrey(pos, R * 0.75f);
+            if (g.IsPlaying && cooldown <= 0f && prey == null) prey = g.NearestPrey(pos, R * 0.6f);
             if (!g.IsPlaying) prey = null;
 
             float speed, turn;
@@ -70,8 +70,8 @@ namespace FishPond
             {
                 var lead = prey.pos + (prey.pos - pos).normalized * length * 0.1f;
                 desired = Ang(lead - pos);
-                speed = R * 0.5f;
-                turn = 2.4f;
+                speed = R * 0.42f;
+                turn = 2.0f;
             }
             else
             {
@@ -96,7 +96,7 @@ namespace FishPond
             {
                 g.SharkEats(this, prey);
                 prey = null;
-                cooldown = Random.Range(2.2f, 3.2f);
+                cooldown = Random.Range(3.5f, 5f);
                 chomp = 1f;
             }
 

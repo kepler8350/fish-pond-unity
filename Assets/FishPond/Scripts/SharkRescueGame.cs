@@ -101,7 +101,7 @@ namespace FishPond
         {
             from = Vector2.zero;
             if (c.zone != 0) return false;
-            float best = R * 0.32f;
+            float best = R * 0.4f;
             bool found = false;
             foreach (var s in sharks)
             {
