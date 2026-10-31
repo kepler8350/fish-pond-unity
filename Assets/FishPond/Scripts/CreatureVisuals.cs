@@ -402,6 +402,8 @@ namespace FishPond
             t.localRotation = Quaternion.LookRotation(Vector3.right, Vector3.back) * Quaternion.Euler(def.prefabRotation);
             t.localScale = Vector3.one;
 
+            // 에셋에 들어 있는 스크립트(데모 이동·군집 등)는 꺼서 게임의 움직임과 싸우지 않게 함
+            foreach (var mb in instance.GetComponentsInChildren<MonoBehaviour>(true)) mb.enabled = false;
             // 물리 컴포넌트는 꺼서 떨어지거나 부딪히지 않게 함
             foreach (var rb in instance.GetComponentsInChildren<Rigidbody>(true)) rb.isKinematic = true;
             foreach (var c in instance.GetComponentsInChildren<Collider>(true)) c.enabled = false;

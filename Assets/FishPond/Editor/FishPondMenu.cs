@@ -226,7 +226,9 @@ namespace FishPond.EditorTools
                 int score = 0;
                 string lower = file.ToLowerInvariant();
                 if (lower.Contains("swim")) score += 20;                                        // 헤엄 동작 우선
-                foreach (var bad in new[] { "attack", "turn", "eat", "idle", "dead", "bone", "rig", "skeleton", "collider" })
+                if (lower.Contains("withcontroller")) score += 8;
+                foreach (var bad in new[] { "attack", "turn", "eat", "idle", "dead", "bone", "rig", "skeleton", "collider",
+                                            "transparent", "demo", "boids", "pold", "old" })
                     if (lower.Contains(bad)) score -= 15;
                 if (go.GetComponentInChildren<SkinnedMeshRenderer>(true) != null) score += 10;   // 움직이는 모델 우선
                 if (go.GetComponentInChildren<Animator>(true) != null) score += 5;
