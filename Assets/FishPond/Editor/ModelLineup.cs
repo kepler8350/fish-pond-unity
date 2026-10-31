@@ -1,0 +1,73 @@
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+
+namespace FishPond
+{
+    /// <summary>
+    /// 연결된 모든 생물 모델을 "오른쪽으로 헤엄치는" 방향으로 한 줄씩 늘어놓는 확인용 장면.
+    /// 머리가 오른쪽, 등이 위(옆모습) 또는 등이 화면 쪽(위모습)이면 정상입니다.
+    /// 틀린 생물은 생물 설정의 Prefab Rotation(Y=좌우 돌리기, Z=굴리기)으로 고칩니다.
+    /// </summary>
+    public static class ModelLineup
+    {
+        class Item { public string name; public GameObject prefab; public bool side; public Vector3 rot; public float scale; public RuntimeAnimatorController ctrl; }
+
+        [MenuItem("Fish Pond/모델 방향 확인 장면", priority = 20)]
+        public static void Open()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            var camGo = new GameObject("Camera");
+            var cam = camGo.AddComponent<Camera>();
+            cam.orthographic = true;
+            cam.orthographicSize = 5f;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.16f, 0.45f, 0.5f);
+            cam.transform.position = new Vector3(0f, 0f, -10f);
+            cam.nearClipPlane = 0.1f;
+            cam.farClipPlane = 50f;
+
+            var lg = new GameObject("Light");
+            var light = lg.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.intensity = 1.1f;
+            RenderSettings.ambientLight = new Color(0.55f, 0.6f, 0.62f);
+
+            var cat = SpeciesCatalog.Load();
+            if (cat == null) { Debug.LogWarning("[FishPond] 생물 설정 에셋이 없습니다."); return; }
+
+            var items = new System.Collections.Generic.List<Item>();
+            foreach (var s in cat.species)
+                if (s != null && s.prefabOverride != null)
+                    items.Add(new Item { name = s.displayName + " (" + s.id + ")", prefab = s.prefabOverride, side = s.prefabSideView, rot = s.prefabRotation, scale = s.prefabScale, ctrl = s.animatorController });
+            if (cat.sharkPrefab != null)
+                items.Add(new Item { name = "상어 (Shark)", prefab = cat.sharkPrefab, side = cat.sharkSideView, rot = cat.sharkRotation, scale = cat.sharkScale, ctrl = cat.sharkController });
+
+            int cols = 4;
+            float cellW = 4.2f, cellH = 2.4f;
+            int rows = Mathf.CeilToInt(items.Count / (float)cols);
+            for (int i = 0; i < items.Count; i++)
+            {
+                int cx = i % cols, cy = i / cols;
+                var pos = new Vector3((cx - (cols - 1) * 0.5f) * cellW, ((rows - 1) * 0.5f - cy) * cellH, 0f);
+                var holder = new GameObject(items[i].name).transform;
+                holder.position = pos;
+                Renderer[] rs;
+                ModelFit.Spawn(items[i].prefab, holder, 2.6f, items[i].side, items[i].rot, items[i].scale, items[i].ctrl, out rs);
+
+                var label = new GameObject("label");
+                label.transform.position = pos + new Vector3(0f, -0.95f, -2f);
+                var tm = label.AddComponent<TextMesh>();
+                tm.text = (i + 1) + ". " + items[i].name + "  →";
+                tm.characterSize = 0.09f;
+                tm.fontSize = 48;
+                tm.anchor = TextAnchor.MiddleCenter;
+                tm.color = Color.white;
+            }
+            cam.orthographicSize = Mathf.Max(5f, rows * cellH * 0.55f);
+            Debug.Log("[FishPond] 모델 방향 확인: 모두 머리가 오른쪽(→)을 향해야 합니다. 옆모습 물고기는 등이 위, 거북·가오리·상어는 등이 보여야 합니다.");
+        }
+    }
+}
