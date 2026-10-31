@@ -1,0 +1,184 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 250a691c17ee4a4caa6204b1385821d0, type: 3}
+  m_Name: SpeciesCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::FishPond.SpeciesCatalog
+  species:
+  - id: 0
+    displayName: "\uD770\uB3D9\uAC00\uB9AC"
+    points: 1
+    spawnWeight: 1
+    length: 0.12
+    speed: 0.3
+    holdMultiplier: 1
+    catchable: 1
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 6
+    displayName: "\uB178\uB791\uD0F1"
+    points: 1
+    spawnWeight: 0.9
+    length: 0.13
+    speed: 0.32
+    holdMultiplier: 1
+    catchable: 1
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 12
+    displayName: "\uC815\uC5B4\uB9AC"
+    points: 1
+    spawnWeight: 0.8
+    length: 0.14
+    speed: 0.36
+    holdMultiplier: 1
+    catchable: 1
+    prefabOverride: {fileID: 162542, guid: 604c6a2a7f9c3484a86af004a7dcaf6a, type: 3}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 9100000, guid: 2773e77827fe54653aab7dc5006e0b8c, type: 2}
+  - id: 7
+    displayName: "\uB098\uBE44\uACE0\uAE30"
+    points: 2
+    spawnWeight: 0.7
+    length: 0.12
+    speed: 0.28
+    holdMultiplier: 1
+    catchable: 1
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 1
+    displayName: "\uBE14\uB8E8\uD0F1"
+    points: 2
+    spawnWeight: 0.6
+    length: 0.15
+    speed: 0.34
+    holdMultiplier: 1
+    catchable: 1
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 8
+    displayName: "\uC5D4\uC824\uD53C\uC2DC"
+    points: 3
+    spawnWeight: 0.45
+    length: 0.15
+    speed: 0.26
+    holdMultiplier: 1
+    catchable: 1
+    prefabOverride: {fileID: 2446271334105567411, guid: 42eafa6a5f7d9f44f889f0c0c14ca4d9, type: 3}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 2
+    displayName: "\uBCF5\uC5B4"
+    points: 3
+    spawnWeight: 0.4
+    length: 0.12
+    speed: 0.18
+    holdMultiplier: 1
+    catchable: 1
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 9
+    displayName: "\uC3E0\uBC30\uAC10\uD3AD"
+    points: 4
+    spawnWeight: 0.3
+    length: 0.15
+    speed: 0.16
+    holdMultiplier: 1
+    catchable: 1
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 3
+    displayName: "\uC624\uC9D5\uC5B4"
+    points: 4
+    spawnWeight: 0.3
+    length: 0.19
+    speed: 1.2
+    holdMultiplier: 1
+    catchable: 1
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 4
+    displayName: "\uBB38\uC5B4"
+    points: 5
+    spawnWeight: 0.18
+    length: 0.22
+    speed: 0.1
+    holdMultiplier: 1.25
+    catchable: 1
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 10
+    displayName: "\uAC00\uC624\uB9AC"
+    points: 5
+    spawnWeight: 0.2
+    length: 0.22
+    speed: 0.2
+    holdMultiplier: 1.2
+    catchable: 1
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 11
+    displayName: "\uBC14\uB2E4\uAC70\uBD81"
+    points: 7
+    spawnWeight: 0.1
+    length: 0.25
+    speed: 0.1
+    holdMultiplier: 1.4
+    catchable: 1
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 5
+    displayName: "\uD574\uD30C\uB9AC"
+    points: 0
+    spawnWeight: 0
+    length: 0.15
+    speed: 0.06
+    holdMultiplier: 1
+    catchable: 0
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabScale: 1
+    animatorController: {fileID: 0}
