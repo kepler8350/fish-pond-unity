@@ -94,6 +94,8 @@ namespace FishPond.EditorTools
         static bool Build(string productName, string scene, string exePath)
         {
             var oldName = PlayerSettings.productName;
+            // 이전 빌드가 중간에 멈춰 게임 이름이 남아 있으면 프로젝트 이름으로 되돌림
+            if (oldName == "뜰채 바다" || oldName == "상어 구조대") oldName = "fish-pond-unity";
             var oldMode = PlayerSettings.fullScreenMode;
             try
             {
