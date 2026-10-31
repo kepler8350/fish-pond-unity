@@ -190,7 +190,9 @@ namespace FishPond.EditorTools
                 var ctrl = FindController(used);
                 if (ctrl != null) def.animatorController = ctrl;
                 linked++;
-                log.AppendLine("  " + def.displayName + " ← " + AssetDatabase.GetAssetPath(model) + (ctrl != null ? "  (애니메이션: " + ctrl.name + ")" : ""));
+                int fixedMats = RepairMaterials(model);
+                log.AppendLine("  " + def.displayName + " ← " + AssetDatabase.GetAssetPath(model) + (ctrl != null ? "  (애니메이션: " + ctrl.name + ")" : "")
+                    + (fixedMats > 0 ? "  (재질 " + fixedMats + "개를 기본 셰이더로 변환)" : ""));
             }
             EditorUtility.SetDirty(cat);
             AssetDatabase.SaveAssets();
@@ -209,6 +211,132 @@ namespace FishPond.EditorTools
             }
             Debug.Log(log.ToString());
             Selection.activeObject = cat;
+        }
+
+        /// <summary>
+        /// URP/HDRP 전용 재질(분홍색)을 기본(Built-in) Standard 셰이더로 바꿉니다.
+        /// 셰이더가 없으면 실행 중에는 텍스처 정보를 읽을 수 없으므로, 에디터에서 저장된 값을 직접 읽어 옮깁니다.
+        /// </summary>
+        static int RepairMaterials(GameObject model)
+        {
+            var standard = Shader.Find("Standard");
+            if (standard == null) return 0;
+            int count = 0;
+            var done = new HashSet<Material>();
+            foreach (var r in model.GetComponentsInChildren<Renderer>(true))
+            {
+                foreach (var m in r.sharedMaterials)
+                {
+                    if (m == null || !done.Add(m)) continue;
+                    if (m.shader != null && m.shader.isSupported && m.shader.name != "Hidden/InternalErrorShader"
+                        && !m.shader.name.StartsWith("Universal Render Pipeline", StringComparison.Ordinal)
+                        && !m.shader.name.StartsWith("HDRP", StringComparison.Ordinal)) continue;
+                    if (!AssetDatabase.GetAssetPath(m).EndsWith(".mat", StringComparison.OrdinalIgnoreCase)) continue;
+
+                    Texture albedo = null, normal = null, mask = null;
+                    Color color = Color.white;
+                    bool hasColor = false;
+                    float cutoff = 0.5f;
+                    var so = new SerializedObject(m);
+                    var texEnvs = so.FindProperty("m_SavedProperties.m_TexEnvs");
+                    if (texEnvs != null)
+                    {
+                        for (int i = 0; i < texEnvs.arraySize; i++)
+                        {
+                            var e = texEnvs.GetArrayElementAtIndex(i);
+                            var name = e.FindPropertyRelative("first").stringValue;
+                            var tex = e.FindPropertyRelative("second.m_Texture").objectReferenceValue as Texture;
+                            if (tex == null) continue;
+                            var n = name.ToLowerInvariant();
+                            if (albedo == null && (n == "_basemap" || n == "_maintex" || n == "_basecolormap" || n.Contains("albedo") || n.Contains("diffuse"))) albedo = tex;
+                            else if (normal == null && (n == "_bumpmap" || n.Contains("normal"))) normal = tex;
+                            else if (mask == null && (n.Contains("metallic") || n.Contains("mask"))) mask = tex;
+                        }
+                    }
+                    var colors = so.FindProperty("m_SavedProperties.m_Colors");
+                    if (colors != null)
+                        for (int i = 0; i < colors.arraySize; i++)
+                        {
+                            var e = colors.GetArrayElementAtIndex(i);
+                            var name = e.FindPropertyRelative("first").stringValue;
+                            if (name == "_BaseColor" || (name == "_Color" && !hasColor)) { color = e.FindPropertyRelative("second").colorValue; hasColor = true; }
+                        }
+                    var floats = so.FindProperty("m_SavedProperties.m_Floats");
+                    if (floats != null)
+                        for (int i = 0; i < floats.arraySize; i++)
+                        {
+                            var e = floats.GetArrayElementAtIndex(i);
+                            if (e.FindPropertyRelative("first").stringValue == "_Cutoff") cutoff = e.FindPropertyRelative("second").floatValue;
+                        }
+                    // 텍스처 이름이 저장되어 있지 않으면 같은 에셋 폴더에서 이름으로 찾기
+                    if (albedo == null) albedo = FindTextureNear(m, new[] { "albedo", "basecolor", "base_color", "diffuse", "color", "_d" });
+                    if (normal == null) normal = FindTextureNear(m, new[] { "normal", "_n" });
+
+                    int queue = m.renderQueue;
+                    Undo.RecordObject(m, "FishPond 재질 변환");
+                    m.shader = standard;
+                    m.color = hasColor ? color : Color.white;
+                    if (albedo != null) m.mainTexture = albedo;
+                    if (normal != null) { m.SetTexture("_BumpMap", normal); m.EnableKeyword("_NORMALMAP"); }
+                    m.SetFloat("_Glossiness", 0.55f);
+                    m.SetFloat("_Metallic", 0f);
+                    if (queue >= 2400 && queue < 3000)
+                    {
+                        // 지느러미 등 알파 테스트 재질 → Standard Cutout
+                        m.SetFloat("_Mode", 1f);
+                        m.SetFloat("_Cutoff", cutoff);
+                        m.SetOverrideTag("RenderType", "TransparentCutout");
+                        m.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                        m.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+                        m.SetInt("_ZWrite", 1);
+                        m.EnableKeyword("_ALPHATEST_ON");
+                        m.DisableKeyword("_ALPHABLEND_ON");
+                        m.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                        m.renderQueue = 2450;
+                    }
+                    else if (queue >= 3000)
+                    {
+                        m.SetFloat("_Mode", 2f);
+                        m.SetOverrideTag("RenderType", "Transparent");
+                        m.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                        m.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                        m.SetInt("_ZWrite", 0);
+                        m.EnableKeyword("_ALPHABLEND_ON");
+                        m.DisableKeyword("_ALPHATEST_ON");
+                        m.renderQueue = 3000;
+                    }
+                    EditorUtility.SetDirty(m);
+                    count++;
+                }
+            }
+            if (count > 0) AssetDatabase.SaveAssets();
+            return count;
+        }
+
+        static Texture FindTextureNear(Material m, string[] hints)
+        {
+            var dir = Path.GetDirectoryName(AssetDatabase.GetAssetPath(m)).Replace('\\', '/');
+            // 재질 폴더의 상위(에셋 루트 쪽)까지 올라가며 찾기
+            for (int up = 0; up < 3 && !string.IsNullOrEmpty(dir); up++)
+            {
+                var stem = m.name.Replace("M_", "").Replace("Mat_", "").ToLowerInvariant();
+                Texture best = null;
+                int bestScore = 0;
+                foreach (var guid in AssetDatabase.FindAssets("t:Texture", new[] { dir }))
+                {
+                    var p = AssetDatabase.GUIDToAssetPath(guid);
+                    var fn = Path.GetFileNameWithoutExtension(p).ToLowerInvariant();
+                    int score = 0;
+                    for (int h = 0; h < hints.Length; h++) if (fn.Contains(hints[h])) { score += 10 - h; break; }
+                    if (score == 0) continue;
+                    foreach (var part in stem.Split('_', ' ')) if (part.Length > 2 && fn.Contains(part)) score += 5;
+                    if (score > bestScore) { bestScore = score; best = AssetDatabase.LoadAssetAtPath<Texture>(p); }
+                }
+                if (best != null) return best;
+                var parent = Path.GetDirectoryName(dir);
+                dir = parent == null ? null : parent.Replace('\\', '/');
+            }
+            return null;
         }
 
         static GameObject FindModel(string filter, string keyword)
