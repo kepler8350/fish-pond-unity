@@ -1,0 +1,50 @@
+# Unity 자동 생성 폴더
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# IDE
+.vs/
+.idea/
+.vscode/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# 빌드 산출물
+*.apk
+*.aab
+*.app
+*.unitypackage
+sysinfo.txt
+crashlytics-buildinfo*
+
+# Asset Store 에셋은 재배포 금지라 저장소에 올리지 않습니다.
+# 가져온 에셋 폴더를 Assets/ThirdParty/ 아래로 옮겨 두세요.
+/Assets/ThirdParty/
+/Assets/ThirdParty.meta
+
+# 추적기
+__pycache__/
+*.pyc
+tools/tracker/calib.json
+
+# OS
+.DS_Store
+Thumbs.db
