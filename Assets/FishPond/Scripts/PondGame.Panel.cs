@@ -3,7 +3,7 @@ using UnityEngine;
 namespace FishPond
 {
     /// <summary>운영자용 설정 패널(F1)과 추적 보정 마커(F2)</summary>
-    public partial class FishPondGame
+    public abstract partial class PondGame
     {
         bool showPanel;
         Rect panelRect = new Rect(20, 20, 440, 10);
@@ -44,7 +44,7 @@ namespace FishPond
             GUILayout.BeginArea(panelRect, GUI.skin.box);
             panelScroll = GUILayout.BeginScrollView(panelScroll);
 
-            GUILayout.Label("<b>뜰채 바다 · 운영 설정</b>  (F1 닫기)", Rich());
+            GUILayout.Label("<b>" + GameTitle + " · 운영 설정</b>  (F1 닫기)", Rich());
             GUILayout.Space(6);
 
             GUILayout.Label("게임 시간: " + settings.durationSec + "초");
@@ -53,10 +53,9 @@ namespace FishPond
                 if (GUILayout.Toggle(settings.durationSec == d, d + "초", "Button")) settings.durationSec = d;
             GUILayout.EndHorizontal();
 
-            GUILayout.Label("연못 생물 수: " + settings.creatureCount + "마리");
+            GUILayout.Label("물고기 수: " + settings.creatureCount + "마리");
             settings.creatureCount = Mathf.RoundToInt(GUILayout.HorizontalSlider(settings.creatureCount, 4, 24));
-            GUILayout.Label("해파리 (닿으면 뜰채가 1.6초 마비): " + settings.jellyCount + "마리");
-            settings.jellyCount = Mathf.RoundToInt(GUILayout.HorizontalSlider(settings.jellyCount, 0, 3));
+            DrawGameSettings();
 
             GUILayout.Space(8);
             GUILayout.Label("<b>투사</b>", Rich());
@@ -114,13 +113,13 @@ namespace FishPond
             GUILayout.EndArea();
         }
 
-        static GUIStyle Rich()
+        protected static GUIStyle Rich()
         {
             var st = new GUIStyle(GUI.skin.label) { richText = true };
             return st;
         }
 
-        static float Slider(string label, float v, float min, float max)
+        protected static float Slider(string label, float v, float min, float max)
         {
             GUILayout.Label(label + ": " + v.ToString("0.00"));
             return GUILayout.HorizontalSlider(v, min, max);

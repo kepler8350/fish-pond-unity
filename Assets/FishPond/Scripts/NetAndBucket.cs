@@ -72,15 +72,15 @@ namespace FishPond
             return sr;
         }
 
-        public void Render(FishPondGame g, float time)
+        public void Render(PondGame g, float time)
         {
             float r = g.NETR;
             go.transform.localPosition = new Vector3(pos.x, pos.y, -1f);
             go.transform.localScale = new Vector3(r, r, 1f);
 
-            var b = g.buckets[id];
-            var toBucket = b.pos - pos;
-            float ha = toBucket.magnitude < b.radius ? Mathf.Atan2(b.pos.y, b.pos.x) : Mathf.Atan2(toBucket.y, toBucket.x);
+            var anchor = g.HandleAnchor(id);
+            var toAnchor = anchor - pos;
+            float ha = toAnchor.magnitude < r * 1.5f ? Mathf.Atan2(anchor.y, anchor.x) : Mathf.Atan2(toAnchor.y, toAnchor.x);
             handlePivot.localRotation = Quaternion.Euler(0, 0, ha * Mathf.Rad2Deg);
             bool showHandle = g.settings.showHandles && !external;
             if (handlePivot.gameObject.activeSelf != showHandle) handlePivot.gameObject.SetActive(showHandle);
@@ -103,12 +103,12 @@ namespace FishPond
             }
             else arc.positionCount = 0;
 
-            bool full = load.Count >= FishPondGame.CAP;
+            bool full = load.Count >= PondGame.CAP;
             fullText.Visible = full;
             if (full)
             {
                 var o = -new Vector2(Mathf.Cos(ha), Mathf.Sin(ha)) * 1.45f;
-                fullText.Place(o, b.textRot, -0.1f);
+                fullText.Place(o, g.PlayerTextRot(id), -0.1f);
             }
         }
     }
@@ -170,7 +170,7 @@ namespace FishPond
         public void SetScore(int points, int count)
         {
             score.Text = points.ToString();
-            label.Text = FishPondGame.PlayerNames[id] + " · " + count + "마리";
+            label.Text = PondGame.PlayerNames[id] + " · " + count + "마리";
         }
 
         public void SetRank(string text, Color c)

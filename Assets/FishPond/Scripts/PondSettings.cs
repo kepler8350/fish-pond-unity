@@ -7,11 +7,12 @@ namespace FishPond
     [Serializable]
     public class PondSettings
     {
-        const string Key = "FishPond.Settings.v2";
+        [NonSerialized] string key = "FishPond.Settings.v2";
 
         public int durationSec = 90;
         public int creatureCount = 14;
-        public int jellyCount = 1;
+        public int jellyCount = 1;       // 뜰채 바다
+        public int sharkCount = 2;       // 상어 구조대
 
         // 투사 보정 (둥근 화면 전체를 이동·확대·가로세로 보정)
         public float calibScale = 1f;
@@ -25,23 +26,23 @@ namespace FishPond
         public bool showHandles = true;
         public float volume = 0.8f;
 
-        public static PondSettings Load()
+        public static PondSettings Load(string key)
         {
             try
             {
-                if (PlayerPrefs.HasKey(Key))
+                if (PlayerPrefs.HasKey(key))
                 {
-                    var s = JsonUtility.FromJson<PondSettings>(PlayerPrefs.GetString(Key));
-                    if (s != null) return s;
+                    var s = JsonUtility.FromJson<PondSettings>(PlayerPrefs.GetString(key));
+                    if (s != null) { s.key = key; return s; }
                 }
             }
             catch (Exception e) { Debug.LogWarning("[FishPond] 설정을 읽지 못해 기본값을 씁니다: " + e.Message); }
-            return new PondSettings();
+            return new PondSettings { key = key };
         }
 
         public void Save()
         {
-            PlayerPrefs.SetString(Key, JsonUtility.ToJson(this));
+            PlayerPrefs.SetString(key, JsonUtility.ToJson(this));
             PlayerPrefs.Save();
         }
     }

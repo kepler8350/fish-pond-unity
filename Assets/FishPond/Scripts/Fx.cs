@@ -256,6 +256,7 @@ namespace FishPond
             Add("ink", new Seg(220, 70, 0.35f, 1, 0.5f));
             Add("sting", new Seg(900, 300, 0.25f, 2, 0.22f), new Seg(700, 250, 0.2f, 2, 0.18f, 0.08f));
             Add("jet", new Seg(300, 600, 0.12f, 1, 0.3f));
+            Add("chomp", new Seg(190, 60, 0.16f, 2, 0.3f), new Seg(150, 50, 0.16f, 2, 0.26f, 0.13f));
         }
 
         void Add(string name, params Seg[] segs)

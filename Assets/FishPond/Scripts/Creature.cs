@@ -16,6 +16,8 @@ namespace FishPond
         public readonly GameObject go;
         public readonly CreatureVisual vis;
         public readonly float size;
+        /// <summary>구역 번호 (상어 구조대: 0 상어 쪽, 1 안전한 쪽)</summary>
+        public int zone;
 
         public State state = State.Swim;
         public Vector2 pos;
@@ -65,7 +67,7 @@ namespace FishPond
 
         public bool IsJelly { get { return def.id == SpeciesId.Jellyfish; } }
         public bool InPond { get { return state != State.InBucket; } }
-        public float HoldRequired { get { return FishPondGame.HOLD * def.holdMultiplier * (puffK > 0.5f ? 2f : 1f); } }
+        public float HoldRequired { get { return PondGame.HOLD * def.holdMultiplier * (puffK > 0.5f ? 2f : 1f); } }
         public float Radius(float R) { return def.length * R * size * 0.5f; }
 
         static Vector2 Dir(float a) { return new Vector2(Mathf.Cos(a), Mathf.Sin(a)); }
@@ -77,24 +79,31 @@ namespace FishPond
             heading += Mathf.Clamp(d, -rate * dt, rate * dt);
         }
 
+        PondGame game;
+
         void NewTarget(float R)
         {
-            float a = Random.value * Tau, r = Mathf.Sqrt(Random.value) * R * 0.75f;
-            target = Dir(a) * r;
+            target = game.RandomTarget(this);
             wanderT = Random.Range(2f, 5f);
         }
 
         bool ClampInPond(float R, float f)
         {
-            float m = pos.magnitude;
-            if (m <= R * f) return false;
-            pos = pos / m * R * f;
+            var q = game.ClampToZone(this, pos, f);
+            if ((q - pos).sqrMagnitude < 1e-10f) return false;
+            pos = q;
             return true;
         }
 
-        // ============================================================ 매 프레임
-        public void Update(float dt, FishPondGame g)
+        float AwayFromEdge(float desired, float f)
         {
+            return game.NearEdge(this, pos, f) ? Ang(game.Inward(this, pos)) : desired;
+        }
+
+        // ============================================================ 매 프레임
+        public void Update(float dt, PondGame g)
+        {
+            game = g;
             if (fadingOut) alpha = Mathf.Max(0f, alpha - dt * 1.5f);
             else if (alpha < 1f) alpha = Mathf.Min(1f, alpha + dt * 1.3f);
 
@@ -144,9 +153,10 @@ namespace FishPond
 
                 case State.InBucket:
                 {
-                    var b = g.buckets[bucket];
+                    Vector2 bp; float br;
+                    g.BucketSlot(bucket, out bp, out br);
                     bucketAngle += bucketSpeed * dt;
-                    pos = b.pos + Dir(bucketAngle) * bucketRadius * b.radius;
+                    pos = bp + Dir(bucketAngle) * bucketRadius * br;
                     heading = bucketAngle + Mathf.Sign(bucketSpeed) * Mathf.PI * 0.5f;
                     swimAnim = 0.4f;
                     break;
@@ -156,7 +166,7 @@ namespace FishPond
         }
 
         // ------------------------------------------------------------ 흰동가리 · 블루탱 · 복어
-        void SwimFish(float dt, FishPondGame g)
+        void SwimFish(float dt, PondGame g)
         {
             float R = g.R;
             wanderT -= dt;
@@ -168,14 +178,16 @@ namespace FishPond
             foreach (var n in g.nets)
             {
                 float d = Vector2.Distance(pos, n.pos);
-                if (!calm && n.speed > FishPondGame.FLEE * R && d < g.NETR * 2.8f) { desired = Ang(pos - n.pos); boost = 1f; }
+                if (!calm && n.speed > PondGame.FLEE * R && d < g.NETR * 2.8f) { desired = Ang(pos - n.pos); boost = 1f; }
                 if (def.id == SpeciesId.Pufferfish && puffT <= 0f && d < g.NETR * 2.4f && g.IsPlaying)
                 {
                     puffT = 2.6f;
                     g.sfx.Play("puff", 0.7f);
                 }
             }
-            if (pos.magnitude > R * 0.8f) desired = Ang(-pos);
+            Vector2 threat;
+            if (g.Threat(this, out threat)) { desired = Ang(pos - threat); boost = 1f; }
+            desired = AwayFromEdge(desired, 0.8f);
 
             if (puffT > 0f) { puffT -= dt; puffK = Mathf.MoveTowards(puffK, 1f, dt * 5f); }
             else puffK = Mathf.MoveTowards(puffK, 0f, dt * 1.2f);
@@ -189,13 +201,12 @@ namespace FishPond
         }
 
         // ------------------------------------------------------------ 오징어: 물을 뿜어 툭툭 튀어나감
-        void SwimSquid(float dt, FishPondGame g)
+        void SwimSquid(float dt, PondGame g)
         {
             float R = g.R, slow = hold > 0f ? 0.3f : 1f;
             jetT -= dt; fleeCd -= dt; wanderT -= dt;
             if (wanderT <= 0f) NewTarget(R);
-            var aim = pos.magnitude > R * 0.7f ? -pos : target - pos;
-            Steer(Ang(aim), 1.4f, dt);
+            Steer(AwayFromEdge(Ang(target - pos), 0.7f), 1.4f, dt);
 
             if (fleeCd <= 0f)
             {
@@ -227,7 +238,7 @@ namespace FishPond
         }
 
         // ------------------------------------------------------------ 문어: 천천히 기다가, 뜰채가 오면 먹물 쏘고 도망
-        void SwimOctopus(float dt, FishPondGame g)
+        void SwimOctopus(float dt, PondGame g)
         {
             float R = g.R, slow = hold > 0f ? 0.3f : 1f;
             inkCd -= dt;
@@ -250,7 +261,7 @@ namespace FishPond
                 }
                 wanderT -= dt;
                 if (wanderT <= 0f || (target - pos).magnitude < R * 0.08f) NewTarget(R);
-                float desired = pos.magnitude > R * 0.75f ? Ang(-pos) : Ang(target - pos);
+                float desired = AwayFromEdge(Ang(target - pos), 0.75f);
                 if (crawling)
                 {
                     Steer(desired, 1.2f, dt);
@@ -283,13 +294,12 @@ namespace FishPond
         }
 
         // ------------------------------------------------------------ 해파리: 둥실둥실 (잡을 수 없음, 닿으면 찌릿)
-        void SwimJelly(float dt, FishPondGame g)
+        void SwimJelly(float dt, PondGame g)
         {
             float R = g.R;
             pulseT -= dt; wanderT -= dt;
             if (wanderT <= 0f) NewTarget(R);
-            var aim = pos.magnitude > R * 0.7f ? -pos : target - pos;
-            Steer(Ang(aim), 0.5f, dt);
+            Steer(AwayFromEdge(Ang(target - pos), 0.7f), 0.5f, dt);
             if (pulseT <= 0f) { vel += Dir(heading) * R * def.speed * 2f; pulseT = 1.8f; }
             vel *= Mathf.Exp(-dt * 1.2f);
             pos += vel * dt;
@@ -322,14 +332,15 @@ namespace FishPond
             hop = 0f;
         }
 
-        public void StartFly(Vector2 netVel, FishPondGame g)
+        public void StartFly(Vector2 netVel, PondGame g)
         {
             state = State.Fly;
             net = -1;
             flyT = 0f;
             flyFrom = pos;
             var to = pos + netVel * 0.12f;
-            if (to.magnitude > g.R * 0.8f) to = Dir(Ang(pos)) * g.R * Random.Range(0.5f, 0.75f);
+            game = g;
+            to = g.ClampToZone(this, to, 0.75f);
             flyTo = to;
             flyDur = 0.45f + (to - pos).magnitude / (g.R * 3f);
         }
@@ -356,7 +367,7 @@ namespace FishPond
         }
 
         // ============================================================ 그리기
-        void Render(float dt, FishPondGame g)
+        void Render(float dt, PondGame g)
         {
             float R = g.R, len = def.length * R * size;
             float scale = R * size, z = 0f;
@@ -377,8 +388,9 @@ namespace FishPond
                     break;
                 case State.InBucket:
                 {
-                    var b = g.buckets[bucket];
-                    scale = Mathf.Min(scale * 0.45f, b.radius * 0.5f / def.length);
+                    Vector2 bp; float br;
+                    g.BucketSlot(bucket, out bp, out br);
+                    scale = Mathf.Min(scale * 0.45f, br * 0.5f / def.length);
                     order = 42; z = -0.65f; shadowOff *= 0.4f;
                     break;
                 }
