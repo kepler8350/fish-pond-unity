@@ -33,7 +33,23 @@ namespace FishPond
             tail.localPosition = new Vector2(-0.47f, 0f);
             MakeSprite("tail", Art.SharkTail, Color.white, 31, Vector2.zero, new Vector2(0.32f, 0.42f)).transform.SetParent(tail, false);
             body = MakeSprite("body", Art.SharkBody, Color.white, 32, Vector2.zero, Vector2.one).transform;
+
+            // 실사 상어 모델이 설정되어 있으면 그림 대신 모델 사용 (그림자는 그대로)
+            var cat = SpeciesCatalog.Load();
+            if (cat != null && cat.sharkPrefab != null)
+            {
+                var holder = new GameObject("model").transform;
+                holder.SetParent(go.transform, false);
+                Renderer[] rs;
+                ModelFit.Spawn(cat.sharkPrefab, holder, 1f, cat.sharkSideView, cat.sharkRotation, cat.sharkScale, cat.sharkController, out rs);
+                foreach (var r in rs) if (r != null) r.sortingOrder = 32;
+                tail.gameObject.SetActive(false);
+                body.gameObject.SetActive(false);
+                hasModel = true;
+            }
         }
+
+        readonly bool hasModel;
 
         SpriteRenderer MakeSprite(string name, Sprite sp, Color c, int order, Vector2 pos, Vector2 scale)
         {
@@ -123,7 +139,7 @@ namespace FishPond
             var t = go.transform;
             t.localPosition = new Vector3(pos.x, pos.y, -0.4f);
             t.localRotation = Quaternion.Euler(0, 0, heading * Mathf.Rad2Deg);
-            t.localScale = new Vector3(length, length, 1f);
+            t.localScale = new Vector3(length, length, hasModel ? length : 1f);
             tail.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(phase) * (prey != null ? 26f : 16f));
             body.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(phase + Mathf.PI) * 3f);
             body.localScale = new Vector3(1f + chomp * 0.08f, 1f - chomp * 0.06f, 1f);

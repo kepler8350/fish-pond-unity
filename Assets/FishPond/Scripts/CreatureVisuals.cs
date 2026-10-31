@@ -395,107 +395,12 @@ namespace FishPond
 
         public PrefabVisual(SpeciesDef def, Transform parent, float length) : base(parent, length)
         {
-            instance = Object.Instantiate(def.prefabOverride, root, false);
-            instance.name = def.prefabOverride.name;
-            var t = instance.transform;
-            t.localPosition = Vector3.zero;
-            // 옆모습: 모델의 오른쪽 옆구리가 카메라를 봄 / 위모습: 모델의 등이 카메라를 봄
-            var baseRot = def.prefabSideView ? Quaternion.LookRotation(Vector3.right, Vector3.up)
-                                             : Quaternion.LookRotation(Vector3.right, Vector3.back);
-            t.localRotation = baseRot * Quaternion.Euler(def.prefabRotation);
-            t.localScale = Vector3.one;
-
-            // 에셋에 들어 있는 스크립트(데모 이동·군집 등)는 꺼서 게임의 움직임과 싸우지 않게 함
-            foreach (var mb in instance.GetComponentsInChildren<MonoBehaviour>(true)) mb.enabled = false;
-            // 물리 컴포넌트는 꺼서 떨어지거나 부딪히지 않게 함
-            foreach (var rb in instance.GetComponentsInChildren<Rigidbody>(true)) rb.isKinematic = true;
-            foreach (var c in instance.GetComponentsInChildren<Collider>(true)) c.enabled = false;
-            foreach (var rb in instance.GetComponentsInChildren<Rigidbody2D>(true)) rb.simulated = false;
-            foreach (var c in instance.GetComponentsInChildren<Collider2D>(true)) c.enabled = false;
-
-            renderers = instance.GetComponentsInChildren<Renderer>(true);
-            FixMaterials(renderers);
-
-            // 헤엄 애니메이션: 컨트롤러가 비어 있으면 설정의 컨트롤러를 붙이고, 화면 밖이어도 계속 움직이게
-            foreach (var anim in instance.GetComponentsInChildren<Animator>(true))
-            {
-                if (anim.runtimeAnimatorController == null && def.animatorController != null)
-                    anim.runtimeAnimatorController = def.animatorController;
-                anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-                anim.applyRootMotion = false;
-            }
-
-            // 길이(진행 방향 = 로컬 X)가 L이 되도록 맞추고 가운데 정렬
-            bool has = false;
-            Vector3 min = Vector3.zero, max = Vector3.zero;
-            foreach (var r in renderers)
-            {
-                if (r is ParticleSystemRenderer) continue;
-                var b = r.bounds;
-                for (int i = 0; i < 8; i++)
-                {
-                    var corner = new Vector3(
-                        (i & 1) == 0 ? b.min.x : b.max.x,
-                        (i & 2) == 0 ? b.min.y : b.max.y,
-                        (i & 4) == 0 ? b.min.z : b.max.z);
-                    var lp = root.InverseTransformPoint(corner);
-                    if (!has) { min = max = lp; has = true; }
-                    else { min = Vector3.Min(min, lp); max = Vector3.Max(max, lp); }
-                }
-            }
-            if (has)
-            {
-                float extent = Mathf.Max(max.x - min.x, 0.0001f);
-                float s = L / extent * def.prefabScale;
-                var center = (min + max) * 0.5f;
-                t.localScale = Vector3.one * s;
-                t.localPosition = new Vector3(-center.x * s, -center.y * s, 0f);
-            }
+            instance = ModelFit.Spawn(def.prefabOverride, root, L, def.prefabSideView, def.prefabRotation, def.prefabScale, def.animatorController, out renderers);
         }
 
         public override void SetSorting(int baseOrder)
         {
             foreach (var r in renderers) if (r != null) r.sortingOrder = baseOrder + 2;
-        }
-
-        static Shader standard;
-
-        /// <summary>
-        /// 이 프로젝트(Built-in)에서 못 그리는 셰이더(분홍색)를 쓰는 재질은
-        /// 같은 텍스처·색으로 Standard 셰이더 재질로 바꿉니다.
-        /// </summary>
-        static void FixMaterials(Renderer[] rs)
-        {
-            if (standard == null) standard = Shader.Find("Standard");
-            if (standard == null) return;
-            foreach (var r in rs)
-            {
-                if (r == null || r is ParticleSystemRenderer) continue;
-                var mats = r.sharedMaterials;
-                bool changed = false;
-                for (int i = 0; i < mats.Length; i++)
-                {
-                    var m = mats[i];
-                    if (m != null && m.shader != null && m.shader.isSupported && m.shader.name != "Hidden/InternalErrorShader") continue;
-                    var nm = new Material(standard) { name = (m != null ? m.name : "Fish") + " (Standard)" };
-                    if (m != null)
-                    {
-                        foreach (var prop in new[] { "_MainTex", "_BaseMap", "_BaseColorMap", "_Albedo" })
-                            if (m.HasProperty(prop) && m.GetTexture(prop) != null) { nm.mainTexture = m.GetTexture(prop); break; }
-                        foreach (var prop in new[] { "_Color", "_BaseColor" })
-                            if (m.HasProperty(prop)) { nm.color = m.GetColor(prop); break; }
-                        if (m.HasProperty("_BumpMap") && m.GetTexture("_BumpMap") != null)
-                        {
-                            nm.SetTexture("_BumpMap", m.GetTexture("_BumpMap"));
-                            nm.EnableKeyword("_NORMALMAP");
-                        }
-                    }
-                    nm.SetFloat("_Glossiness", 0.55f);
-                    mats[i] = nm;
-                    changed = true;
-                }
-                if (changed) r.sharedMaterials = mats;
-            }
         }
 
         public override void SetAlpha(float a)

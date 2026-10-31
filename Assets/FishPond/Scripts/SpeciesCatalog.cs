@@ -101,6 +101,18 @@ namespace FishPond
 
         public List<SpeciesDef> species = SpeciesDefaults.Create();
 
+        [Header("상어 구조대의 상어 (선택)")]
+        [Tooltip("실사 상어 모델. 비워두면 코드로 그린 상어를 씁니다.")]
+        public GameObject sharkPrefab;
+        [Tooltip("켜면 옆모습, 끄면 위에서 내려다본 모습 (상어는 보통 끔)")]
+        public bool sharkSideView = false;
+        [Tooltip("상어 모델 회전 보정. 기준: 모델의 앞(+Z)이 진행 방향, 위(+Y)가 등 쪽")]
+        public Vector3 sharkRotation = Vector3.zero;
+        public float sharkScale = 1f;
+        public RuntimeAnimatorController sharkController;
+
+        public static SpeciesCatalog Load() { return Resources.Load<SpeciesCatalog>(ResourcePath); }
+
         public static List<SpeciesDef> LoadOrDefault()
         {
             var list = SpeciesDefaults.Create();

@@ -152,13 +152,13 @@ namespace FishPond.EditorTools
             { SpeciesId.Angelfish, new[] { "EmperorAngelfish", "Emperor", "Angelfish" } },
             { SpeciesId.Sardine, new[] { "Sardine" } },
             { SpeciesId.Clownfish, new[] { "Clownfish", "Clown_fish", "Clown" } },
-            { SpeciesId.BlueTang, new[] { "BlueTang", "Blue_Tang", "Blue Tang", "Dory" } },
+            { SpeciesId.BlueTang, new[] { "BlueTang", "Blue_Tang", "Blue Tang", "Dory", "Surgeonfish" } },
             { SpeciesId.YellowTang, new[] { "YellowTang", "Yellow_Tang", "Yellow Tang" } },
             { SpeciesId.Butterflyfish, new[] { "Butterflyfish", "Butterfly_fish" } },
             { SpeciesId.Pufferfish, new[] { "Pufferfish", "Puffer" } },
             { SpeciesId.Lionfish, new[] { "Lionfish", "Lion_fish" } },
             { SpeciesId.SeaTurtle, new[] { "SeaTurtle", "Sea_Turtle", "Turtle" } },
-            { SpeciesId.Stingray, new[] { "Stingray", "Manta" } },
+            { SpeciesId.Stingray, new[] { "Stingray", "Eagle_Ray", "Eagle Ray", "Manta" } },
             { SpeciesId.Octopus, new[] { "Octopus" } },
             { SpeciesId.Squid, new[] { "Squid" } },
             { SpeciesId.Jellyfish, new[] { "Jellyfish" } },
@@ -186,6 +186,12 @@ namespace FishPond.EditorTools
                     if (model != null) { used = kw; break; }
                 }
                 if (model == null) continue;
+                if (def.prefabOverride != model)
+                {
+                    // 넓적한 몸(거북·가오리)은 위에서 본 모습, 나머지는 옆모습이 기본
+                    def.prefabSideView = !(kv.Key == SpeciesId.SeaTurtle || kv.Key == SpeciesId.Stingray);
+                    def.prefabRotation = Vector3.zero;
+                }
                 def.prefabOverride = model;
                 var ctrl = FindController(used);
                 if (ctrl != null) def.animatorController = ctrl;
@@ -193,6 +199,23 @@ namespace FishPond.EditorTools
                 int fixedMats = RepairMaterials(model);
                 log.AppendLine("  " + def.displayName + " ← " + AssetDatabase.GetAssetPath(model) + (ctrl != null ? "  (애니메이션: " + ctrl.name + ")" : "")
                     + (fixedMats > 0 ? "  (재질 " + fixedMats + "개를 기본 셰이더로 변환)" : ""));
+            }
+            // 상어 구조대의 상어
+            GameObject shark = null;
+            foreach (var kw in new[] { "Great_White_Shark", "GreatWhite", "White_Pointer", "Shark" })
+            {
+                shark = FindModel("t:Prefab", kw) ?? FindModel("t:GameObject", kw);
+                if (shark != null) break;
+            }
+            if (shark != null)
+            {
+                if (cat.sharkPrefab != shark) { cat.sharkSideView = false; cat.sharkRotation = Vector3.zero; }
+                cat.sharkPrefab = shark;
+                var sc = FindController("Shark");
+                if (sc != null) cat.sharkController = sc;
+                int fm = RepairMaterials(shark);
+                linked++;
+                log.AppendLine("  상어(상어 구조대) ← " + AssetDatabase.GetAssetPath(shark) + (fm > 0 ? "  (재질 " + fm + "개 변환)" : ""));
             }
             EditorUtility.SetDirty(cat);
             AssetDatabase.SaveAssets();
