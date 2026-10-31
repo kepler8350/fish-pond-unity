@@ -39,23 +39,20 @@ Shader "FishPond/Water"
                 return o;
             }
 
-            // 가볍게 계산되는 물속 빛무늬
+            // 물속 빛무늬: 일렁이는 격자의 0선(sin x · sin y ≈ 0)을 가는 빛줄기로 그림.
+            // 나눗셈이 없어 값이 깨지지 않고, 항상 밝게만 더해집니다.
             float caustic(float2 p, float t)
             {
-                float2 i = p;
-                float c = 1.0;
-                const float inten = 0.005;
+                float2 q = p;
+                float c = 0.0;
                 [unroll]
-                for (int n = 0; n < 4; n++)
+                for (int n = 0; n < 3; n++)
                 {
-                    float tt = t * (1.0 - 3.5 / (n + 1.0));
-                    i = p + float2(cos(tt - i.x) + sin(tt + i.y), sin(tt - i.y) + cos(tt + i.x));
-                    float2 q = float2(p.x / (sin(i.x + tt) / inten), p.y / (cos(i.y + tt) / inten));
-                    c += 1.0 / max(length(q), 1e-4);
+                    q += float2(sin(q.y * 1.7 + t * 1.3 + n), cos(q.x * 1.5 - t * 1.1 + n * 1.7)) * 0.55;
+                    c += abs(sin(q.x) * sin(q.y));
                 }
-                c /= 4.0;
-                c = 1.17 - pow(abs(c), 1.4);
-                return pow(abs(c), 8.0);
+                c /= 3.0;
+                return pow(saturate(1.0 - c), 6.0);
             }
 
             fixed4 frag (v2f i) : SV_Target
@@ -66,10 +63,10 @@ Shader "FishPond/Water"
 
                 float3 col = lerp(_CenterColor.rgb, _EdgeColor.rgb, pow(saturate(d / _Radius), 1.6));
                 float t = _Time.y * _Speed;
-                float c = caustic(p * _CausticScale + 20.0, t);
-                col += _CausticColor.rgb * saturate(c) * _CausticColor.a * (1.0 - d * 0.5);
+                float c = caustic(p * _CausticScale, t);
+                col += _CausticColor.rgb * c * _CausticColor.a * (1.0 - d * 0.5);
                 col *= 1.0 - smoothstep(0.75, 1.0, d / _Radius) * 0.35;
-                return fixed4(col, alpha);
+                return fixed4(saturate(col), alpha);
             }
             ENDCG
         }
