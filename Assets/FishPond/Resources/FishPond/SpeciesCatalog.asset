@@ -22,8 +22,9 @@ MonoBehaviour:
     holdMultiplier: 1
     catchable: 1
     prefabOverride: {fileID: -6689036041284674117, guid: 8ea6fe491784e6448aba2bd852b8a9f6, type: 3}
-    prefabSideView: 1
+    prefabSideView: 0
     prefabRotation: {x: -90, y: 0, z: 0}
+    prefabTilt: 30
     prefabScale: 1
     animatorController: {fileID: 0}
   - id: 6
@@ -35,8 +36,9 @@ MonoBehaviour:
     holdMultiplier: 1
     catchable: 1
     prefabOverride: {fileID: -6689036041284674117, guid: 65f049eaf1c070741a483e79aa5aaceb, type: 3}
-    prefabSideView: 1
+    prefabSideView: 0
     prefabRotation: {x: -90, y: 0, z: 90}
+    prefabTilt: 30
     prefabScale: 1
     animatorController: {fileID: 0}
   - id: 12
@@ -48,8 +50,9 @@ MonoBehaviour:
     holdMultiplier: 1
     catchable: 1
     prefabOverride: {fileID: 162542, guid: 604c6a2a7f9c3484a86af004a7dcaf6a, type: 3}
-    prefabSideView: 1
+    prefabSideView: 0
     prefabRotation: {x: 0, y: 0, z: 0}
+    prefabTilt: 30
     prefabScale: 1
     animatorController: {fileID: 9100000, guid: 2773e77827fe54653aab7dc5006e0b8c, type: 2}
   - id: 7
@@ -61,8 +64,9 @@ MonoBehaviour:
     holdMultiplier: 1
     catchable: 1
     prefabOverride: {fileID: -6689036041284674117, guid: b58480c35efe0734f9d84311b58975ef, type: 3}
-    prefabSideView: 1
+    prefabSideView: 0
     prefabRotation: {x: -90, y: 0, z: -90}
+    prefabTilt: 30
     prefabScale: 1
     animatorController: {fileID: 0}
   - id: 1
@@ -74,8 +78,9 @@ MonoBehaviour:
     holdMultiplier: 1
     catchable: 1
     prefabOverride: {fileID: -6689036041284674117, guid: 22cf4d38416fb9c4b8bc6728608f86f5, type: 3}
-    prefabSideView: 1
+    prefabSideView: 0
     prefabRotation: {x: 90, y: 0, z: 180}
+    prefabTilt: 30
     prefabScale: 1
     animatorController: {fileID: 0}
   - id: 8
@@ -87,8 +92,9 @@ MonoBehaviour:
     holdMultiplier: 1
     catchable: 1
     prefabOverride: {fileID: 2446271334105567411, guid: 42eafa6a5f7d9f44f889f0c0c14ca4d9, type: 3}
-    prefabSideView: 1
+    prefabSideView: 0
     prefabRotation: {x: 0, y: 0, z: 0}
+    prefabTilt: 30
     prefabScale: 1
     animatorController: {fileID: 0}
   - id: 2
@@ -100,8 +106,9 @@ MonoBehaviour:
     holdMultiplier: 1
     catchable: 1
     prefabOverride: {fileID: -6689036041284674117, guid: bbd659bdad566ea42ae7f6b7f53e59c6, type: 3}
-    prefabSideView: 1
+    prefabSideView: 0
     prefabRotation: {x: -90, y: 0, z: 0}
+    prefabTilt: 30
     prefabScale: 1
     animatorController: {fileID: 0}
   - id: 9
@@ -113,8 +120,9 @@ MonoBehaviour:
     holdMultiplier: 1
     catchable: 1
     prefabOverride: {fileID: -6689036041284674117, guid: e8fed1c69d8de654ba56ac3cc9f7f696, type: 3}
-    prefabSideView: 1
+    prefabSideView: 0
     prefabRotation: {x: -90, y: 0, z: 180}
+    prefabTilt: 30
     prefabScale: 1
     animatorController: {fileID: 0}
   - id: 3
@@ -126,8 +134,9 @@ MonoBehaviour:
     holdMultiplier: 1
     catchable: 1
     prefabOverride: {fileID: -6689036041284674117, guid: 83cee0fda455ce24a8ea99ff79ed8a18, type: 3}
-    prefabSideView: 1
+    prefabSideView: 0
     prefabRotation: {x: 0, y: 0, z: 0}
+    prefabTilt: 0
     prefabScale: 1
     animatorController: {fileID: 0}
   - id: 4
@@ -141,6 +150,7 @@ MonoBehaviour:
     prefabOverride: {fileID: 8128668236925612103, guid: 125383bc1047bd441a1745ffec4e22c1, type: 3}
     prefabSideView: 0
     prefabRotation: {x: 0, y: 0, z: 0}
+    prefabTilt: 0
     prefabScale: 1
     animatorController: {fileID: 0}
   - id: 10
@@ -154,6 +164,7 @@ MonoBehaviour:
     prefabOverride: {fileID: -6689036041284674117, guid: 3e93ac80569db134f95f50675e27cd5f, type: 3}
     prefabSideView: 0
     prefabRotation: {x: -90, y: 0, z: 90}
+    prefabTilt: 0
     prefabScale: 1
     animatorController: {fileID: 0}
   - id: 11
@@ -167,6 +178,7 @@ MonoBehaviour:
     prefabOverride: {fileID: 8128668236925612103, guid: ffb4dc58ab392b84188d9585befe155b, type: 3}
     prefabSideView: 0
     prefabRotation: {x: 0, y: 0, z: 0}
+    prefabTilt: 0
     prefabScale: 1
     animatorController: {fileID: 0}
   - id: 5
@@ -178,13 +190,14 @@ MonoBehaviour:
     holdMultiplier: 1
     catchable: 0
     prefabOverride: {fileID: 8128668236925612103, guid: addcc4c31c8649e49b7c98622fb8de2a, type: 3}
-    prefabSideView: 1
+    prefabSideView: 0
     prefabRotation: {x: 0, y: 0, z: 0}
+    prefabTilt: 0
     prefabScale: 1
     animatorController: {fileID: 0}
   sharkPrefab: {fileID: 8128668236925612103, guid: 8d90ce8fb0bcbed4290e5eaf9fb0f15e, type: 3}
   sharkSideView: 0
-  sharkRotation: {x: 0, y: 0, z: 0}
+  sharkRotation: {x: 0, y: 180, z: 0}
   sharkScale: 1
   sharkController: {fileID: 0}
   decor:
