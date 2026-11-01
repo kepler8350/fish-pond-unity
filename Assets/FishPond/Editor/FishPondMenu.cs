@@ -428,12 +428,23 @@ namespace FishPond.EditorTools
         /// <summary>장식 회전 보정 (모델 파일 이름 → 회전). 위(+Y)가 카메라 쪽이 기준.</summary>
         static readonly Dictionary<string, Vector3> KnownDecorFixes = new Dictionary<string, Vector3>(StringComparer.OrdinalIgnoreCase)
         {
+            // 위가 +Y로 들어오는 모델
+            { "purple_seashell", new Vector3(90f, 0f, 0f) },
+            { "seashell",        new Vector3(90f, 0f, 0f) },
+            { "sea_weed",        new Vector3(90f, 0f, 0f) },
+            { "starfish_1",      new Vector3(90f, 0f, 0f) },
+        };
+
+        /// <summary>장식으로 쓰지 않는 모델 (여러 조각이 한 판에 늘어선 세트 등)</summary>
+        static readonly HashSet<string> DecorExclude = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "soft_coral_set",
         };
 
         static int LinkDecor(SpeciesCatalog cat, StringBuilder log)
         {
             if (cat.decor == null) cat.decor = new List<DecorDef>();
-            cat.decor.RemoveAll(d => d == null || d.prefab == null);
+            cat.decor.RemoveAll(d => d == null || d.prefab == null || DecorExclude.Contains(d.prefab.name));
             var used = new HashSet<GameObject>();
             foreach (var s in cat.species) if (s != null && s.prefabOverride != null) used.Add(s.prefabOverride);
             if (cat.sharkPrefab != null) used.Add(cat.sharkPrefab);
@@ -443,7 +454,8 @@ namespace FishPond.EditorTools
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 if (!path.StartsWith("Assets/", StringComparison.Ordinal) || path.StartsWith("Assets/FishPond/", StringComparison.Ordinal)) continue;
                 var file = Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
-                if (file.Contains("fish") && !file.Contains("starfish")) continue;   // "coral fish" 등 물고기 제외
+                if (file.Contains("fish") && !file.Contains("starfish")) continue;
+                if (DecorExclude.Contains(file)) continue;   // "coral fish" 등 물고기 제외
                 DecorKind? kind = null;
                 foreach (var kv in DecorKeywords)
                 {

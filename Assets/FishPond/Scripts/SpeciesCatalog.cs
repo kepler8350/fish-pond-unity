@@ -20,7 +20,7 @@ namespace FishPond
     {
         public DecorKind kind;
         public GameObject prefab;
-        [Tooltip("회전 보정. 기본은 모델의 +Z(위)가 카메라 쪽. 위가 +Y인 모델은 X=-90")]
+        [Tooltip("회전 보정. 기본은 모델의 +Z(위)가 카메라 쪽. 위가 +Y인 모델은 X=90")]
         public Vector3 rotation = Vector3.zero;
         [Tooltip("크기 배율")]
         public float scale = 1f;
