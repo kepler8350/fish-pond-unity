@@ -129,6 +129,14 @@ namespace FishPond
         public float sharkScale = 1f;
         public RuntimeAnimatorController sharkController;
 
+        [Header("물 (바닥 모델 + 물결 빛 텍스처)")]
+        [Tooltip("물 바닥으로 깔 3D 모델 (모래·해저 지형 스캔 등). 위에서 내려다봄")]
+        public GameObject seabedPrefab;
+        [Tooltip("바닥 모델 회전 보정. 기본은 모델의 +Z(위)가 카메라 쪽")]
+        public Vector3 seabedRotation = Vector3.zero;
+        [Tooltip("물결 빛(코스틱) 애니메이션 프레임 텍스처들 (순서대로)")]
+        public List<Texture2D> causticFrames = new List<Texture2D>();
+
         [Header("배경 장식 (산호·바위·해초 등, 3D 모델)")]
         public List<DecorDef> decor = new List<DecorDef>();
 

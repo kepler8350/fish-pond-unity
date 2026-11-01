@@ -21,6 +21,11 @@
 | 상어 (상어 구조대) | Great White Shark | Mateus Schwaab (@Mehrus) | https://sketchfab.com/3d-models/great-white-shark-e4f107a6d87b424fb165aba9a53d0665 |
 | 가오리 | Bullnose Eagle Ray - Myliobatis freminvillii | MTSUichthyology | https://sketchfab.com/3d-models/a935de2bf87f4bc5a2594818cfb45c93 |
 
+### 물 바닥
+| 모델 | 제작자 | 링크 |
+|---|---|---|
+| Sand at Sunset Beach | Terrie Simmons-Ehrhardt (@terrielsimmons) | https://sketchfab.com/3d-models/1ac0847acae44ffe9c3783be28e82bcf |
+
 ### 배경 장식 (산호·바위·해초 등)
 | 모델 | 제작자 | 링크 |
 |---|---|---|
@@ -48,6 +53,11 @@
 | Starfish | kenchoo | https://sketchfab.com/3d-models/b018478dffa34fd4ab2991d4afedb956 |
 | Purple Seashell | Meerschaum Digital | https://sketchfab.com/3d-models/04d9983ba04242fe99182d4506ea0714 |
 | Seashell | yaocheng | https://sketchfab.com/3d-models/9b59afbf4a694e8cb6daa0e0235cff86 |
+
+## OpenGameArt — CC0 (퍼블릭 도메인)
+| 용도 | 에셋 | 제작자 | 링크 |
+|---|---|---|---|
+| 물결 빛(코스틱) | Water Caustics Effect (Small) | leeor_net | https://opengameart.org/content/water-caustics-effect-small |
 
 ## Unity Asset Store — Standard Unity Asset Store EULA
 | 생물 | 에셋 |

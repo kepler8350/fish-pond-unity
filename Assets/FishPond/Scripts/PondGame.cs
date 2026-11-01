@@ -261,7 +261,55 @@ namespace FishPond
         }
 
         /// <summary>둥근 바닷물 + 모래 바닥 (셰이더)</summary>
-        protected MeshRenderer AddWater(Material mat, float radius, int order)
+        Material causticMat;
+        List<Texture2D> causticFrames;
+
+        /// <summary>
+        /// 물: 바닥 모델(에셋) + 물색·물결 빛(코스틱 텍스처 에셋). 에셋이 없으면 예전 셰이더 물로 대신함.
+        /// </summary>
+        protected void AddWater(Material fallback, float radius, int order)
+        {
+            var cat = SpeciesCatalog.Load();
+            var sh = Shader.Find("FishPond/Caustics");
+            bool hasFrames = cat != null && cat.causticFrames != null && cat.causticFrames.Exists(t => t != null);
+            if (cat == null || cat.seabedPrefab == null || sh == null || !hasFrames)
+            {
+                AddShaderWater(fallback, radius, order);
+                return;
+            }
+            // 바닥: 모델을 원 전체를 덮게 펴서 맨 뒤(z≈1)에 납작하게
+            var bed = new DecorDef { kind = DecorKind.Rock, prefab = cat.seabedPrefab, rotation = cat.seabedRotation, scale = 1f };
+            var bedT = Decor.Place(bed, env, Vector2.zero, radius * 2.15f, 0f, 0.97f, 0.02f, true);
+            if (bedT != null) bedT.name = "Seabed";
+
+            // 물 층: 바닥 바로 앞(z=0.95). 생물·장식이 앞에 있으면 깊이 테스트로 가려짐
+            causticFrames = cat.causticFrames.FindAll(t => t != null);
+            causticMat = new Material(sh) { name = "FishPond Caustics" };
+            causticMat.SetTexture("_Tex0", causticFrames[0]);
+            causticMat.SetTexture("_Tex1", causticFrames[causticFrames.Count > 1 ? 1 : 0]);
+            var layer = new GameObject("WaterLayer");
+            layer.transform.SetParent(env, false);
+            layer.transform.localPosition = new Vector3(0f, 0f, 0.95f);
+            layer.transform.localScale = new Vector3(radius * 2.04f, radius * 2.04f, 1f);
+            layer.AddComponent<MeshFilter>().sharedMesh = Art.Quad;
+            var mr = layer.AddComponent<MeshRenderer>();
+            mr.sharedMaterial = causticMat;
+            mr.sortingOrder = order;
+        }
+
+        /// <summary>물결 빛 애니메이션: 프레임 두 장을 부드럽게 넘김 (초당 약 10장)</summary>
+        void UpdateCaustics()
+        {
+            if (causticMat == null || causticFrames == null || causticFrames.Count == 0) return;
+            float f = clock * 10f;
+            int i = Mathf.FloorToInt(f);
+            int n = causticFrames.Count;
+            causticMat.SetTexture("_Tex0", causticFrames[((i % n) + n) % n]);
+            causticMat.SetTexture("_Tex1", causticFrames[(((i + 1) % n) + n) % n]);
+            causticMat.SetFloat("_Blend", f - i);
+        }
+
+        protected MeshRenderer AddShaderWater(Material mat, float radius, int order)
         {
             var water = new GameObject("Water");
             water.transform.SetParent(env, false);
@@ -383,6 +431,7 @@ namespace FishPond
         /// <summary>해초·말미잘 흔들림, 거품</summary>
         void UpdateAmbient(float dt)
         {
+            UpdateCaustics();
             foreach (var sw in swayers)
             {
                 if (sw.t == null) continue;

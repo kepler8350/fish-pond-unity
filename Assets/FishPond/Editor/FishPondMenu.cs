@@ -211,6 +211,27 @@ namespace FishPond.EditorTools
                 log.AppendLine("  " + name);
                 n++;
             }
+            // 물결 빛(코스틱) 텍스처: Caustics.zip 의 frames/*.png
+            foreach (var zipPath in Directory.GetFiles(downloads, "*.zip"))
+            {
+                if (Path.GetFileName(zipPath).IndexOf("caustic", StringComparison.OrdinalIgnoreCase) < 0) continue;
+                var cdir = Path.Combine(dest, "Caustics");
+                Directory.CreateDirectory(cdir);
+                using (var zip = System.IO.Compression.ZipFile.OpenRead(zipPath))
+                {
+                    foreach (var e in zip.Entries)
+                    {
+                        if (!e.FullName.StartsWith("frames/", StringComparison.OrdinalIgnoreCase) || !e.Name.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) continue;
+                        var target = Path.Combine(cdir, e.Name);
+                        if (File.Exists(target)) continue;
+                        using (var src = e.Open())
+                        using (var dst = File.Create(target)) src.CopyTo(dst);
+                        n++;
+                    }
+                }
+                log.AppendLine("  물결 빛 프레임 ← " + Path.GetFileName(zipPath));
+                break;
+            }
             AssetDatabase.Refresh();
             log.AppendLine(n + "개를 " + dest + " 에 가져왔습니다. 이어서 \"가져온 실사 에셋 연결하기\"를 실행하세요.");
             Debug.Log(log.ToString());
@@ -272,6 +293,32 @@ namespace FishPond.EditorTools
                 linked++;
                 log.AppendLine("  상어(상어 구조대) ← " + AssetDatabase.GetAssetPath(shark) + (fm > 0 ? "  (재질 " + fm + "개 변환)" : ""));
             }
+            // 물: 바닥 모델 + 물결 빛 프레임
+            GameObject bed = null;
+            foreach (var kw in new[] { "sand_at_sunset_beach", "seabed", "sea_floor", "ocean_floor", "seafloor" })
+            {
+                bed = FindModel("t:GameObject", kw);
+                if (bed != null) break;
+            }
+            if (bed != null) { cat.seabedPrefab = bed; RepairMaterials(bed); log.AppendLine("  물 바닥 ← " + AssetDatabase.GetAssetPath(bed)); linked++; }
+            var frames = new List<Texture2D>();
+            var framePaths = new List<string>();
+            foreach (var guid in AssetDatabase.FindAssets("caust_ t:Texture2D"))
+            {
+                var p = AssetDatabase.GUIDToAssetPath(guid);
+                if (Path.GetFileName(p).StartsWith("caust_", StringComparison.OrdinalIgnoreCase)) framePaths.Add(p);
+            }
+            framePaths.Sort(StringComparer.OrdinalIgnoreCase);
+            foreach (var p in framePaths)
+            {
+                // 반복 무늬로 쓰므로 Repeat, 밉맵 켬
+                var ti = AssetImporter.GetAtPath(p) as TextureImporter;
+                if (ti != null && ti.wrapMode != TextureWrapMode.Repeat) { ti.wrapMode = TextureWrapMode.Repeat; ti.SaveAndReimport(); }
+                var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(p);
+                if (tex != null) frames.Add(tex);
+            }
+            if (frames.Count > 0) { cat.causticFrames = frames; log.AppendLine("  물결 빛 프레임 " + frames.Count + "장"); linked++; }
+
             // 배경 장식 (산호·바위·해초 등): 이름으로 찾은 모델을 모두 목록에 추가
             linked += LinkDecor(cat, log);
             EditorUtility.SetDirty(cat);

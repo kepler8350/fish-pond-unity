@@ -38,7 +38,7 @@ namespace FishPond
         /// 장식 하나를 놓습니다. size = 위에서 본 가장 긴 폭, zFront = 카메라 쪽 윗면의 z (생물보다 뒤),
         /// maxDepth = 두께 상한 (물 바닥(z=1)을 뚫지 않게 납작하게 누름).
         /// </summary>
-        public static Transform Place(DecorDef d, Transform parent, Vector2 pos, float size, float yawDeg, float zFront, float maxDepth)
+        public static Transform Place(DecorDef d, Transform parent, Vector2 pos, float size, float yawDeg, float zFront, float maxDepth, bool cover = false)
         {
             if (d == null || d.prefab == null) return null;
             var holder = new GameObject("decor_" + d.kind).transform;
@@ -70,7 +70,9 @@ namespace FishPond
                 }
             }
             if (!has) return holder;
-            float extent = Mathf.Max(max.x - min.x, max.y - min.y, 0.0001f);
+            // cover: 짧은 변이 size를 덮도록 (바닥처럼 원 전체를 채울 때)
+            float extent = cover ? Mathf.Max(Mathf.Min(max.x - min.x, max.y - min.y), 0.0001f)
+                                 : Mathf.Max(max.x - min.x, max.y - min.y, 0.0001f);
             float s = size / extent * d.scale;
             float depth = (max.z - min.z) * s;
             float kz = depth > maxDepth ? maxDepth / depth : 1f;
