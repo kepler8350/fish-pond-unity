@@ -49,8 +49,9 @@ namespace FishPond
             var inst = Object.Instantiate(d.prefab, holder, false);
             inst.name = d.prefab.name;
             var t = inst.transform;
-            // 모델의 위(+Y)가 카메라 쪽(-Z)을 보게 눕힘
-            t.localRotation = Quaternion.Euler(-90f, 0f, 0f) * Quaternion.Euler(d.rotation);
+            // Sketchfab glb는 대부분 위가 +Z인 채로 들어오므로, 모델의 +Z가 카메라 쪽(-Z)을 보게 뒤집음
+            // (위가 +Y인 모델은 회전 보정 X=-90)
+            t.localRotation = Quaternion.Euler(180f, 0f, 0f) * Quaternion.Euler(d.rotation);
             t.localPosition = Vector3.zero;
             t.localScale = Vector3.one;
             var rs = ModelFit.Prepare(inst, null);
