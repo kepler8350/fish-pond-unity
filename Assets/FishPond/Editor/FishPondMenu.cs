@@ -242,6 +242,11 @@ namespace FishPond.EditorTools
                 }
                 def.prefabOverride = model;
                 ApplyKnownFix(model, ref def.prefabSideView, ref def.prefabRotation);
+                // 바닥에 투사하므로 모든 생물은 위에서 내려다본 모습. 납작한 물고기는 옆구리가 살짝 보이게 기울임
+                def.prefabSideView = false;
+                bool flat = kv.Key == SpeciesId.SeaTurtle || kv.Key == SpeciesId.Stingray || kv.Key == SpeciesId.Octopus
+                            || kv.Key == SpeciesId.Jellyfish || kv.Key == SpeciesId.Squid;
+                def.prefabTilt = flat ? 0f : 30f;
                 var ctrl = FindController(used);
                 if (ctrl != null) def.animatorController = ctrl;
                 linked++;
@@ -491,7 +496,7 @@ namespace FishPond.EditorTools
             { "lion_fish",                              new Fix(true, -90f, 0f, 180f) },
             { "model_53a_-_flatback_sea_turtle",        new Fix(false, 0f, 0f, 0f) },
             { "bullnose_eagle_ray_-_myliobatis_freminvillii", new Fix(false, -90f, 0f, 90f) },
-            { "great_white_shark",                      new Fix(false, 0f, 0f, 0f) },
+            { "great_white_shark",                      new Fix(false, 0f, 180f, 0f) },
             { "octopus",                                new Fix(false, 0f, 0f, 0f) },
         };
 

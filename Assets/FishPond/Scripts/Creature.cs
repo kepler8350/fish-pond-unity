@@ -193,7 +193,7 @@ namespace FishPond
             else puffK = Mathf.MoveTowards(puffK, 0f, dt * 1.2f);
 
             Steer(desired, turnRate + boost * 4f, dt);
-            float spd = def.speed * R * (1f + boost * 1.8f) * (hold > 0f ? 0.3f : 1f) * (1f - 0.55f * puffK);
+            float spd = def.speed * g.settings.fishSpeed * R * (1f + boost * 1.8f) * (hold > 0f ? 0.3f : 1f) * (1f - 0.55f * puffK);
             pos += Dir(heading) * spd * dt;
             boost = Mathf.Max(0f, boost - dt * 0.8f);
             swimAnim = Mathf.Clamp01(spd / (R * 0.6f));
@@ -215,7 +215,7 @@ namespace FishPond
                     if (n.speed > 0.5f * R && Vector2.Distance(pos, n.pos) < g.NETR * 2.6f)
                     {
                         heading = Ang(pos - n.pos);
-                        vel = Dir(heading) * R * def.speed * 1.4f;
+                        vel = Dir(heading) * R * def.speed * g.settings.fishSpeed * 1.4f;
                         fleeCd = 1.4f;
                         jetT = Random.Range(1.2f, 2f);
                         squish = 1f;
@@ -226,7 +226,7 @@ namespace FishPond
             }
             if (jetT <= 0f)
             {
-                vel += Dir(heading) * R * def.speed * 0.9f;
+                vel += Dir(heading) * R * def.speed * g.settings.fishSpeed * 0.9f;
                 jetT = Random.Range(1.3f, 2.4f);
                 squish = 1f;
             }
@@ -265,7 +265,7 @@ namespace FishPond
                 if (crawling)
                 {
                     Steer(desired, 1.2f, dt);
-                    pos += Dir(heading) * def.speed * R * dt * slow;
+                    pos += Dir(heading) * def.speed * g.settings.fishSpeed * R * dt * slow;
                     swimAnim = 0.6f;
                 }
                 else swimAnim = 0.15f;
@@ -300,7 +300,7 @@ namespace FishPond
             pulseT -= dt; wanderT -= dt;
             if (wanderT <= 0f) NewTarget(R);
             Steer(AwayFromEdge(Ang(target - pos), 0.7f), 0.5f, dt);
-            if (pulseT <= 0f) { vel += Dir(heading) * R * def.speed * 2f; pulseT = 1.8f; }
+            if (pulseT <= 0f) { vel += Dir(heading) * R * def.speed * g.settings.fishSpeed * 2f; pulseT = 1.8f; }
             vel *= Mathf.Exp(-dt * 1.2f);
             pos += vel * dt;
             swimAnim = 0.3f;

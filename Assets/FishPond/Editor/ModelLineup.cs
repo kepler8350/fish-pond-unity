@@ -11,7 +11,7 @@ namespace FishPond
     /// </summary>
     public static class ModelLineup
     {
-        class Item { public string name; public GameObject prefab; public bool side; public Vector3 rot; public float scale; public RuntimeAnimatorController ctrl; }
+        class Item { public string name; public GameObject prefab; public bool side; public Vector3 rot; public float scale, tilt; public RuntimeAnimatorController ctrl; }
 
         [MenuItem("Fish Pond/모델 방향 확인 장면", priority = 20)]
         public static void Open()
@@ -41,7 +41,7 @@ namespace FishPond
             var items = new System.Collections.Generic.List<Item>();
             foreach (var s in cat.species)
                 if (s != null && s.prefabOverride != null)
-                    items.Add(new Item { name = s.displayName + " (" + s.id + ")", prefab = s.prefabOverride, side = s.prefabSideView, rot = s.prefabRotation, scale = s.prefabScale, ctrl = s.animatorController });
+                    items.Add(new Item { name = s.displayName + " (" + s.id + ")", prefab = s.prefabOverride, side = s.prefabSideView, rot = s.prefabRotation, scale = s.prefabScale, tilt = s.prefabTilt, ctrl = s.animatorController });
             if (cat.sharkPrefab != null)
                 items.Add(new Item { name = "상어 (Shark)", prefab = cat.sharkPrefab, side = cat.sharkSideView, rot = cat.sharkRotation, scale = cat.sharkScale, ctrl = cat.sharkController });
 
@@ -55,7 +55,7 @@ namespace FishPond
                 var holder = new GameObject(items[i].name).transform;
                 holder.position = pos;
                 Renderer[] rs;
-                ModelFit.Spawn(items[i].prefab, holder, 2.6f, items[i].side, items[i].rot, items[i].scale, items[i].ctrl, out rs);
+                ModelFit.Spawn(items[i].prefab, holder, 2.6f, items[i].side, items[i].rot, items[i].scale, items[i].tilt, items[i].ctrl, out rs);
                 // 확인용: 가장 긴 변이 칸에 맞게 다시 맞춤 (축이 틀린 모델도 크기가 비슷하게 보이도록)
                 bool has = false; Bounds b = new Bounds();
                 foreach (var r in rs) { if (r == null) continue; if (!has) { b = r.bounds; has = true; } else b.Encapsulate(r.bounds); }

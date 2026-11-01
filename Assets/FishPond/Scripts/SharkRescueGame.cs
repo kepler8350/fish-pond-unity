@@ -217,6 +217,25 @@ namespace FishPond
             }
             Spr(env, "fence", Art.Square, new Color(0.55f, 0.95f, 1f, 0.35f), 30, Vector2.zero, new Vector2(C * 0.012f, C * 1.9f), 0f, 0.08f);
 
+            // 물 가운데 바닥: 상어 쪽은 바위·수초, 안전한 쪽은 산호도
+            BuildFloorClusters(rnd, () =>
+            {
+                for (int k = 0; k < 30; k++)
+                {
+                    var p = Random.insideUnitCircle * zoneR * 0.8f;
+                    if (p.x < -gap - zoneR * 0.12f) return p;
+                }
+                return new Vector2(-zoneR * 0.5f, 0f);
+            }, 4, zoneR * 0.06f, false);
+            BuildFloorClusters(rnd, () =>
+            {
+                for (int k = 0; k < 30; k++)
+                {
+                    var p = Random.insideUnitCircle * zoneR * 0.8f;
+                    if (p.x > gap + zoneR * 0.12f) return p;
+                }
+                return new Vector2(zoneR * 0.5f, 0f);
+            }, 4, zoneR * 0.06f, true);
             AddEdgeShade();
         }
 

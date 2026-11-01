@@ -11,6 +11,12 @@ namespace FishPond
         public static GameObject Spawn(GameObject prefab, Transform root, float L, bool sideView, Vector3 rotation, float scale,
                                        RuntimeAnimatorController controller, out Renderer[] renderers)
         {
+            return Spawn(prefab, root, L, sideView, rotation, scale, 0f, controller, out renderers);
+        }
+
+        public static GameObject Spawn(GameObject prefab, Transform root, float L, bool sideView, Vector3 rotation, float scale, float tilt,
+                                       RuntimeAnimatorController controller, out Renderer[] renderers)
+        {
             var instance = Object.Instantiate(prefab, root, false);
             instance.name = prefab.name;
             var t = instance.transform;
@@ -18,7 +24,7 @@ namespace FishPond
             // 옆모습: 모델의 오른쪽 옆구리가 카메라를 봄 / 위모습: 모델의 등이 카메라를 봄
             var baseRot = sideView ? Quaternion.LookRotation(Vector3.right, Vector3.up)
                                    : Quaternion.LookRotation(Vector3.right, Vector3.back);
-            t.localRotation = baseRot * Quaternion.Euler(rotation);
+            t.localRotation = baseRot * Quaternion.Euler(0f, 0f, tilt) * Quaternion.Euler(rotation);
             t.localScale = Vector3.one;
 
             renderers = Prepare(instance, controller);

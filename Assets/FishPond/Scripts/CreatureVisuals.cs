@@ -154,7 +154,7 @@ namespace FishPond
         {
             pivot = Node(root, "pivot", Vector2.zero);
             sideView = def.prefabSideView;
-            instance = ModelFit.Spawn(def.prefabOverride, pivot, L, def.prefabSideView, def.prefabRotation, def.prefabScale, def.animatorController, out renderers);
+            instance = ModelFit.Spawn(def.prefabOverride, pivot, L, def.prefabSideView, def.prefabRotation, def.prefabScale, def.prefabTilt, def.animatorController, out renderers);
         }
 
         public override void SetSorting(int baseOrder)

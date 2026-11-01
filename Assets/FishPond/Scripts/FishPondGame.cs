@@ -84,6 +84,13 @@ namespace FishPond
                 }
                 return new Vector2(rMax, 0f);
             }, R * 1.03f, circleR * 0.96f, 1f);
+
+            // 물 가운데에도 바위·산호·수초 무더기
+            BuildFloorClusters(rnd, () =>
+            {
+                float a = rf() * Mathf.PI * 2f;
+                return new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * R * (0.2f + rf() * 0.65f);
+            }, 7, R * 0.07f, true);
             AddEdgeShade();
         }
 

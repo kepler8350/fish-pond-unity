@@ -336,6 +336,30 @@ namespace FishPond
             }
         }
 
+        /// <summary>
+        /// 물 가운데 바닥의 작은 산호·바위·수초 무더기 (생물 아래에 깔림).
+        /// spot()이 무더기 중심을 고르고, 중심 둘레에 몇 개를 모아 놓음.
+        /// </summary>
+        protected void BuildFloorClusters(System.Random rnd, System.Func<Vector2> spot, int clusters, float unit, bool corals)
+        {
+            System.Func<float> rf = () => (float)rnd.NextDouble();
+            for (int c = 0; c < clusters; c++)
+            {
+                var center = spot();
+                PlaceDecor(rnd, DecorKind.Rock, center, unit * (1.1f + rf() * 0.6f), 0.5f, 0.35f, false);
+                int n = 2 + rnd.Next(3);
+                for (int k = 0; k < n; k++)
+                {
+                    float a = rf() * Mathf.PI * 2f;
+                    var p = center + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * unit * (0.6f + rf() * 0.7f);
+                    float pick = rf();
+                    if (corals && pick < 0.45f) PlaceDecor(rnd, DecorKind.Coral, p, unit * (0.7f + rf() * 0.5f), 0.48f, 0.35f, false);
+                    else if (pick < 0.8f) PlaceDecor(rnd, DecorKind.Seaweed, p, unit * (0.8f + rf() * 0.5f), 0.47f, 0.35f, true);
+                    else PlaceDecor(rnd, rf() < 0.5f ? DecorKind.Starfish : DecorKind.Shell, p, unit * 0.45f, 0.52f, 0.1f, false);
+                }
+            }
+        }
+
         /// <summary>3D 장식 하나 놓기. sway = 물결에 살랑임</summary>
         protected Transform PlaceDecor(System.Random rnd, DecorKind kind, Vector2 p, float size, float zFront, float maxDepth, bool sway)
         {

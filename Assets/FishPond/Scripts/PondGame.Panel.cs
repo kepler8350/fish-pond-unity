@@ -55,6 +55,8 @@ namespace FishPond
 
             GUILayout.Label("물고기 수: " + settings.creatureCount + "마리");
             settings.creatureCount = Mathf.RoundToInt(GUILayout.HorizontalSlider(settings.creatureCount, 4, 24));
+            GUILayout.Label("물고기 속도: " + Mathf.RoundToInt(settings.fishSpeed * 100f) + "%");
+            settings.fishSpeed = Mathf.Round(GUILayout.HorizontalSlider(settings.fishSpeed, 0.2f, 1.5f) * 20f) / 20f;
             DrawGameSettings();
 
             GUILayout.Space(8);

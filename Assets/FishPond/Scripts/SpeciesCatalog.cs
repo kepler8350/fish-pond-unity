@@ -63,6 +63,9 @@ namespace FishPond
         [Tooltip("프리팹 회전 보정. 기준: 모델의 앞(+Z)이 진행 방향, 위(+Y)가 등 쪽")]
         public Vector3 prefabRotation = Vector3.zero;
 
+        [Tooltip("위에서 본 모습일 때 옆구리가 살짝 보이도록 기울이는 각도 (납작한 물고기용)")]
+        public float prefabTilt = 0f;
+
         [Tooltip("프리팹 크기 배율")]
         public float prefabScale = 1f;
 

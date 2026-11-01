@@ -13,6 +13,7 @@ namespace FishPond
         public int creatureCount = 14;
         public int jellyCount = 1;       // 뜰채 바다
         public int sharkCount = 2;       // 상어 구조대
+        public float fishSpeed = 0.55f;  // 물고기 헤엄 속도 배율
 
         // 투사 보정 (둥근 화면 전체를 이동·확대·가로세로 보정)
         public float calibScale = 1f;
@@ -32,7 +33,8 @@ namespace FishPond
             {
                 if (PlayerPrefs.HasKey(key))
                 {
-                    var s = JsonUtility.FromJson<PondSettings>(PlayerPrefs.GetString(key));
+                    var s = new PondSettings();
+                    JsonUtility.FromJsonOverwrite(PlayerPrefs.GetString(key), s);   // 새로 생긴 항목은 기본값 유지
                     if (s != null) { s.key = key; return s; }
                 }
             }
