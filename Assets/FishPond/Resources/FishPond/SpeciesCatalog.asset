@@ -187,3 +187,100 @@ MonoBehaviour:
   sharkRotation: {x: 0, y: 0, z: 0}
   sharkScale: 1
   sharkController: {fileID: 0}
+  decor:
+  - kind: 1
+    prefab: {fileID: -6689036041284674117, guid: 9d89fa10c56ddb546a906be75f829457, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: 5b9de59f1abf2b24297901664de862a3, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: 361d6a4c91500de45991d384fd976df1, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: 09d8094862193fc468cb3d4c4b379d5b, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: 7c2b20ef5138783499a0791faf014c6c, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: 9f82a27dd57dd4146ac06dae9033d794, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: 68e5ab99c49ae404ba9cae3004a90813, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 4
+    prefab: {fileID: -6689036041284674117, guid: 3434efce8ff6d4b4dac69b0cee63c12b, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: bb53b541756efe84ab7ea5abd8552321, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: 9a77adb6b2c5e72409f636287d8d3da8, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: d4c52b244d4ccd74e86557fc64e3e16c, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: 28202c8c039069640863dc1b57f6297f, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: 22c9e279b07db514788fda39902d8311, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 6
+    prefab: {fileID: -6689036041284674117, guid: 2b29c41e9ce91bb44859d9f2c86dff19, type: 3}
+    rotation: {x: 90, y: 0, z: 0}
+    scale: 1
+  - kind: 2
+    prefab: {fileID: -6689036041284674117, guid: 2a3836d1a9839a94e89a3d88f9516f36, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 2
+    prefab: {fileID: -6689036041284674117, guid: eae4235dcc9c6e64c8586cbce3d4d068, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 4
+    prefab: {fileID: -6689036041284674117, guid: a9b0473e01ff15442b4cbe43f44d9e56, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 3
+    prefab: {fileID: 8128668236925612103, guid: 1c1a2eb3e2d8fc14ba126c77b1e5fa11, type: 3}
+    rotation: {x: 90, y: 0, z: 0}
+    scale: 1
+  - kind: 6
+    prefab: {fileID: -6689036041284674117, guid: 71c884b6b23e8c442a5a0b018d2b3ab4, type: 3}
+    rotation: {x: 90, y: 0, z: 0}
+    scale: 1
+  - kind: 3
+    prefab: {fileID: -6689036041284674117, guid: da513488142b05b48a5a8bcd00b153fb, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 5
+    prefab: {fileID: -6689036041284674117, guid: f94319d494c274e40bf5be2114f83c1d, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 5
+    prefab: {fileID: 8128668236925612103, guid: 4c0a3d68f16c16f4d9da345bdea7cb96, type: 3}
+    rotation: {x: 90, y: 0, z: 0}
+    scale: 1
+  - kind: 0
+    prefab: {fileID: -6689036041284674117, guid: a41cd326305a8344e8cef6a34712ceab, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
+  - kind: 1
+    prefab: {fileID: -6689036041284674117, guid: c5eeee76230aa974ab94833f4b9c9b44, type: 3}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: 1
