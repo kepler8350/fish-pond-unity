@@ -279,7 +279,7 @@ namespace FishPond
             }
             // 바닥: 모델을 원 전체를 덮게 펴서 맨 뒤(z≈1)에 납작하게
             var bed = new DecorDef { kind = DecorKind.Rock, prefab = cat.seabedPrefab, rotation = cat.seabedRotation, scale = 1f };
-            var bedT = Decor.Place(bed, env, Vector2.zero, radius * 2.15f, 0f, 0.97f, 0.02f, true);
+            var bedT = Decor.Place(bed, env, Vector2.zero, radius * 2.7f, 0f, 0.97f, 0.02f, true);
             if (bedT != null) bedT.name = "Seabed";
 
             // 물 층: 바닥 바로 앞(z=0.95). 생물·장식이 앞에 있으면 깊이 테스트로 가려짐
