@@ -376,7 +376,7 @@ namespace FishPond.EditorTools
             { DecorKind.Coral,    new[] { "coral", "sponge" } },
             { DecorKind.Rock,     new[] { "rock", "stone", "boulder", "pebble" } },
             { DecorKind.Anemone,  new[] { "anemone" } },
-            { DecorKind.Seaweed,  new[] { "seaweed", "kelp", "algae", "seagrass", "sea_grass" } },
+            { DecorKind.Seaweed,  new[] { "seaweed", "sea_weed", "kelp", "algae", "seagrass", "sea_grass" } },
             { DecorKind.Urchin,   new[] { "urchin" } },
             { DecorKind.Starfish, new[] { "starfish", "sea_star", "seastar" } },
             { DecorKind.Shell,    new[] { "shell", "scallop", "clam", "conch" } },
