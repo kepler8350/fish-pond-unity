@@ -173,6 +173,49 @@ namespace FishPond.EditorTools
         /// Asset Store·Sketchfab 등에서 가져온 모델을 이름으로 찾아 생물에 연결합니다.
         /// 프리팹을 먼저 찾고, 없으면 모델(FBX 등)을 씁니다. 헤엄 애니메이터 컨트롤러도 함께 찾습니다.
         /// </summary>
+        /// <summary>
+        /// 브라우저 다운로드 폴더의 .glb(Sketchfab 등)를 Assets/Sketchfab 폴더로 한 번에 복사해 가져옵니다.
+        /// 이미 프로젝트에 같은 이름이 있으면 건너뛰고, "이름 (1).glb"처럼 같은 파일을 여러 번 받은 것은 하나만 가져옵니다.
+        /// </summary>
+        [MenuItem("Fish Pond/다운로드 폴더의 glb 모델 가져오기", priority = 18)]
+        public static void ImportDownloadedGlb()
+        {
+            var downloads = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            if (!Directory.Exists(downloads)) { Debug.LogWarning("[FishPond] 다운로드 폴더를 찾지 못했습니다: " + downloads); return; }
+            const string dest = "Assets/Sketchfab";
+            Directory.CreateDirectory(dest);
+            var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var guid in AssetDatabase.FindAssets("t:GameObject"))
+                existing.Add(Path.GetFileName(AssetDatabase.GUIDToAssetPath(guid)));
+            var sizes = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+            var files = Directory.GetFiles(downloads, "*.glb");
+            Array.Sort(files, StringComparer.OrdinalIgnoreCase);
+            foreach (var f in files) sizes[Path.GetFileName(f)] = new FileInfo(f).Length;
+            var log = new StringBuilder("[FishPond] 다운로드 폴더 glb 가져오기\n");
+            int n = 0;
+            foreach (var f in files)
+            {
+                var name = Path.GetFileName(f);
+                // "이름 (1).glb" 가 "이름.glb"와 같은 크기면 같은 파일을 또 받은 것
+                var m = System.Text.RegularExpressions.Regex.Match(name, @"^(.*) \(\d+\)\.glb$");
+                if (m.Success)
+                {
+                    long s0;
+                    if (sizes.TryGetValue(m.Groups[1].Value + ".glb", out s0) && s0 == new FileInfo(f).Length) continue;
+                    name = m.Groups[1].Value + "_" + System.Text.RegularExpressions.Regex.Match(name, @"\((\d+)\)").Groups[1].Value + ".glb";
+                }
+                name = name.Replace(' ', '_');
+                if (existing.Contains(name) || existing.Contains(Path.GetFileName(f))) continue;
+                File.Copy(f, Path.Combine(dest, name), true);
+                existing.Add(name);
+                log.AppendLine("  " + name);
+                n++;
+            }
+            AssetDatabase.Refresh();
+            log.AppendLine(n + "개를 " + dest + " 에 가져왔습니다. 이어서 \"가져온 실사 에셋 연결하기\"를 실행하세요.");
+            Debug.Log(log.ToString());
+        }
+
         [MenuItem("Fish Pond/가져온 실사 에셋 연결하기", priority = 19)]
         public static void AutoLink()
         {
