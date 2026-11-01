@@ -24,7 +24,6 @@
 ### 배경 장식 (산호·바위·해초 등)
 | 모델 | 제작자 | 링크 |
 |---|---|---|
-| Soft Coral Set | Kanna-Nakajima (@Kanna-nakajima) | https://sketchfab.com/3d-models/256355f15fcb4095af17b75ae572bff0 |
 | Coral | Sandra_s (@Sandra_sm) | https://sketchfab.com/3d-models/c26e47859f0945d69a4e2944ee80b995 |
 | coral | JonathanFreire (@JonathanFreire) | https://sketchfab.com/3d-models/3f051742aa3b466fa3b8df9bb990d170 |
 | Coral | rkuhlf (@rkuhlf) | https://sketchfab.com/3d-models/dbf4bee13bf84396815073e5cabf8ac3 |
@@ -38,7 +37,6 @@
 | Fan Coral Cluster Low | Valery.Li | https://sketchfab.com/3d-models/ee315b6063f8472ea4788a75098a2cb5 |
 | Tube Sponge | Valery.Li | https://sketchfab.com/3d-models/a187c1b2bc0c4824a9da487b0dfb5223 |
 | Underwater rock Tunnel | vapor_ (@vaporclaws) | https://sketchfab.com/3d-models/f9bfa9f385554e12b8652a20c27e93c3 |
-| Square Rock Cracked | Kless (@klessgyzen) | https://sketchfab.com/3d-models/22aa59eb632242c3ac2441949c6750b6 |
 | beach rock collection 2 | That's Cool Jack (@thats_cool_jack) | https://sketchfab.com/3d-models/02e37b2120304dabbf7136e7baf2bd75 |
 | Sea Weed | rkuhlf (@rkuhlf) | https://sketchfab.com/3d-models/d97c596b189845b681cc8eef8a3ab429 |
 | Seaweed | OwenCalingasan | https://sketchfab.com/3d-models/dec5b256a37f40acb63b0bf30b45d756 |

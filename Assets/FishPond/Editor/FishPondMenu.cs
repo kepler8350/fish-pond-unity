@@ -439,6 +439,7 @@ namespace FishPond.EditorTools
         static readonly HashSet<string> DecorExclude = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "soft_coral_set",
+            "square_rock_cracked_updated_materials",   // 텍스처 없이 하얗게 보임
         };
 
         static int LinkDecor(SpeciesCatalog cat, StringBuilder log)
