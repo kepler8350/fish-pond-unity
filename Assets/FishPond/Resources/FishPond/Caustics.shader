@@ -13,6 +13,7 @@ Shader "FishPond/Caustics"
         _Strength ("Caustic strength", Float) = 0.55
         _Tiling ("Caustic tiling", Float) = 3
         _Drift ("Second layer drift", Vector) = (0.013, 0.009, 0, 0)
+        _Radius ("Circle radius (uv)", Float) = 1
     }
     SubShader
     {
@@ -23,13 +24,14 @@ Shader "FishPond/Caustics"
         CGINCLUDE
         #include "UnityCG.cginc"
         sampler2D _Tex0, _Tex1;
-        float _Blend, _Strength, _Tiling;
+        float _Blend, _Strength, _Tiling, _Radius;
         fixed4 _Tint, _Light;
         float4 _Drift;
         struct appdata { float4 vertex : POSITION; float2 uv : TEXCOORD0; };
         struct v2f { float4 pos : SV_POSITION; float2 uv : TEXCOORD0; };
         v2f vert (appdata v) { v2f o; o.pos = UnityObjectToClipPos(v.vertex); o.uv = v.uv; return o; }
-        float Circle(float2 uv) { float d = length(uv - 0.5) * 2.0; return saturate((1.0 - d) * 60.0); }
+        float Dist(float2 uv) { return length(uv - 0.5) * 2.0 / _Radius; }
+        float Circle(float2 uv) { return saturate((1.0 - Dist(uv)) * 60.0); }
         ENDCG
 
         Pass
@@ -41,10 +43,10 @@ Shader "FishPond/Caustics"
             fixed4 frag (v2f i) : SV_Target
             {
                 float m = Circle(i.uv);
-                // 가장자리로 갈수록 조금 더 깊고 어둡게
-                float d = length(i.uv - 0.5) * 2.0;
+                // 가장자리로 갈수록 조금 더 깊고 어둡게, 원 밖은 검게(투사되지 않는 곳)
+                float d = Dist(i.uv);
                 fixed3 tint = _Tint.rgb * lerp(1.05, 0.8, d * d);
-                return fixed4(lerp(fixed3(1,1,1), tint, m), 1);
+                return fixed4(tint * m, 1);
             }
             ENDCG
         }
@@ -57,8 +59,9 @@ Shader "FishPond/Caustics"
             fixed4 frag (v2f i) : SV_Target
             {
                 float m = Circle(i.uv);
-                float2 uv1 = i.uv * _Tiling;
-                float2 uv2 = i.uv * _Tiling * 0.73 + _Drift.xy * _Time.y + 0.37;
+                float2 cuv = (i.uv - 0.5) / _Radius + 0.5;
+                float2 uv1 = cuv * _Tiling;
+                float2 uv2 = cuv * _Tiling * 0.73 + _Drift.xy * _Time.y + 0.37;
                 float a = lerp(tex2D(_Tex0, uv1).r, tex2D(_Tex1, uv1).r, _Blend);
                 float b = lerp(tex2D(_Tex1, uv2).r, tex2D(_Tex0, uv2).r, _Blend);
                 float c = a * 0.65 + b * 0.35;

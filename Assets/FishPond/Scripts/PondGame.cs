@@ -290,7 +290,9 @@ namespace FishPond
             var layer = new GameObject("WaterLayer");
             layer.transform.SetParent(env, false);
             layer.transform.localPosition = new Vector3(0f, 0f, 0.95f);
-            layer.transform.localScale = new Vector3(radius * 2.04f, radius * 2.04f, 1f);
+            // 바닥 모델이 원 밖으로 삐져나오므로 물 층을 크게 깔고, 원 밖은 셰이더에서 검게 덮음
+            layer.transform.localScale = new Vector3(radius * 2.04f * 3f, radius * 2.04f * 3f, 1f);
+            causticMat.SetFloat("_Radius", 1f / 3f);
             layer.AddComponent<MeshFilter>().sharedMesh = Art.Quad;
             var mr = layer.AddComponent<MeshRenderer>();
             mr.sharedMaterial = causticMat;
