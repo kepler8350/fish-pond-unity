@@ -60,6 +60,16 @@ namespace FishPond
             DrawGameSettings();
 
             GUILayout.Space(8);
+            GUILayout.Label("<b>뒤로 헤엄치는 생물 바로잡기</b> (켜면 앞뒤 반대로, 새로 나오는 생물부터)", Rich());
+            foreach (var d in species)
+            {
+                if (d.prefabOverride == null) continue;
+                bool f = IsFlipped(d.id);
+                bool nf = GUILayout.Toggle(f, " " + d.displayName + " 앞뒤 반대");
+                if (nf != f) SetFlipped(d.id, nf);
+            }
+
+            GUILayout.Space(8);
             GUILayout.Label("<b>투사</b>", Rich());
             settings.showHandles = GUILayout.Toggle(settings.showHandles, " 뜰채 손잡이 그리기 (실물 뜰채를 쓰면 끄기)");
             settings.calibScale = Slider("크기", settings.calibScale, 0.5f, 1.5f);

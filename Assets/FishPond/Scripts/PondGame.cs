@@ -139,6 +139,9 @@ namespace FishPond
         {
             if (!ignoreSavedSettings) settings = PondSettings.Load(SettingsKey);
             species = SpeciesCatalog.LoadOrDefault();
+            baseRotations = new Dictionary<SpeciesId, Vector3>();
+            foreach (var d in species) baseRotations[d.id] = d.prefabRotation;
+            ApplyFlips();
 
             SetupCamera();
             stage = new GameObject("Stage").transform;
@@ -261,6 +264,41 @@ namespace FishPond
         }
 
         /// <summary>둥근 바닷물 + 모래 바닥 (셰이더)</summary>
+        Dictionary<SpeciesId, Vector3> baseRotations;
+
+        /// <summary>운영 설정의 "앞뒤 반대" 목록을 생물 모델 회전에 반영 (새로 나오는 생물부터)</summary>
+        protected void ApplyFlips()
+        {
+            if (baseRotations == null) return;
+            foreach (var d in species)
+            {
+                Vector3 r;
+                if (!baseRotations.TryGetValue(d.id, out r)) continue;
+                d.prefabRotation = IsFlipped(d.id) ? new Vector3(r.x, r.y + 180f, r.z) : r;
+            }
+        }
+
+        public bool IsFlipped(SpeciesId id) { return IsFlipped(id.ToString()); }
+
+        public bool IsFlipped(string key)
+        {
+            foreach (var t in (settings.flippedSpecies ?? "").Split(','))
+                if (t.Trim() == key) return true;
+            return false;
+        }
+
+        public void SetFlipped(SpeciesId id, bool on) { SetFlipped(id.ToString(), on); }
+
+        public void SetFlipped(string key, bool on)
+        {
+            var list = new List<string>();
+            foreach (var t in (settings.flippedSpecies ?? "").Split(','))
+                if (t.Trim().Length > 0 && t.Trim() != key) list.Add(t.Trim());
+            if (on) list.Add(key);
+            settings.flippedSpecies = string.Join(",", list.ToArray());
+            ApplyFlips();
+        }
+
         Material causticMat;
         List<Texture2D> causticFrames;
 

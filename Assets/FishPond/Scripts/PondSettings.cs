@@ -14,6 +14,7 @@ namespace FishPond
         public int jellyCount = 1;       // 뜰채 바다
         public int sharkCount = 2;       // 상어 구조대
         public float fishSpeed = 0.55f;  // 물고기 헤엄 속도 배율
+        public string flippedSpecies = ""; // 앞뒤를 뒤집어 그릴 생물 (쉼표로 구분한 SpeciesId)
 
         // 투사 보정 (둥근 화면 전체를 이동·확대·가로세로 보정)
         public float calibScale = 1f;

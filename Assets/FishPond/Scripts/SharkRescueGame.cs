@@ -273,7 +273,7 @@ namespace FishPond
         void EnsureSharks()
         {
             int want = Mathf.Clamp(settings.sharkCount, 1, 4);
-            while (sharks.Count < want) sharks.Add(new Shark(stage, RandomSharkPoint(), R * 0.42f));
+            while (sharks.Count < want) sharks.Add(new Shark(stage, RandomSharkPoint(), R * 0.42f, IsFlipped("Shark")));
             while (sharks.Count > want) { sharks[sharks.Count - 1].Destroy(); sharks.RemoveAt(sharks.Count - 1); }
         }
 
@@ -370,6 +370,9 @@ namespace FishPond
         {
             GUILayout.Label("상어: " + settings.sharkCount + "마리");
             settings.sharkCount = Mathf.RoundToInt(GUILayout.HorizontalSlider(settings.sharkCount, 1, 4));
+            bool f = IsFlipped("Shark");
+            bool nf = GUILayout.Toggle(f, " 상어 앞뒤 반대 (상어가 뒤로 헤엄치면 켜기, 다음 판부터)");
+            if (nf != f) SetFlipped("Shark", nf);
         }
 
         protected override void OnDestroy()

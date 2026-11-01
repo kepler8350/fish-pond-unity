@@ -19,7 +19,7 @@ namespace FishPond
         Creature prey;
         public bool Hunting { get { return prey != null; } }
 
-        public Shark(Transform parent, Vector2 start, float lengthStage)
+        public Shark(Transform parent, Vector2 start, float lengthStage, bool flip = false)
         {
             length = lengthStage;
             pos = start;
@@ -35,7 +35,8 @@ namespace FishPond
                 var holder = new GameObject("model").transform;
                 holder.SetParent(go.transform, false);
                 Renderer[] rs;
-                ModelFit.Spawn(cat.sharkPrefab, holder, 1f, cat.sharkSideView, cat.sharkRotation, cat.sharkScale, cat.sharkController, out rs);
+                var rot = flip ? cat.sharkRotation + new Vector3(0f, 180f, 0f) : cat.sharkRotation;
+                ModelFit.Spawn(cat.sharkPrefab, holder, 1f, cat.sharkSideView, rot, cat.sharkScale, cat.sharkController, out rs);
                 foreach (var r in rs) if (r != null) r.sortingOrder = 32;
                 hasModel = true;
             }
