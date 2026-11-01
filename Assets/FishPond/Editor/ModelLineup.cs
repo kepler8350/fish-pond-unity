@@ -79,7 +79,30 @@ namespace FishPond
                 tm.anchor = TextAnchor.MiddleCenter;
                 tm.color = Color.white;
             }
-            cam.orthographicSize = Mathf.Max(5f, rows * cellH * 0.55f);
+            // 배경 장식: 위에서 내려다본 모습 (아래쪽에 이어서)
+            int baseRow = rows;
+            var decor = cat.decor ?? new System.Collections.Generic.List<DecorDef>();
+            int di = 0;
+            foreach (var d in decor)
+            {
+                if (d == null || d.prefab == null) continue;
+                int cx = di % cols, cy = baseRow + di / cols;
+                var pos = new Vector3((cx - (cols - 1) * 0.5f) * cellW, ((rows - 1) * 0.5f - cy) * cellH, 0f);
+                var holder = new GameObject("decor").transform;
+                Decor.Place(d, holder, new Vector2(pos.x, pos.y), 2.4f, 0f, 0f, 100f);
+                var label = new GameObject("label");
+                label.transform.position = pos + new Vector3(0f, -1.55f, -2f);
+                var tm = label.AddComponent<TextMesh>();
+                tm.text = "장식 " + (di + 1) + ". " + d.kind + " / " + d.prefab.name;
+                tm.characterSize = 0.07f;
+                tm.fontSize = 48;
+                tm.anchor = TextAnchor.MiddleCenter;
+                tm.color = Color.white;
+                di++;
+            }
+            int totalRows = rows + Mathf.CeilToInt(di / (float)cols);
+            cam.transform.position = new Vector3(0f, -(totalRows - rows) * cellH * 0.5f, -10f);
+            cam.orthographicSize = Mathf.Max(5f, totalRows * cellH * 0.55f);
             Debug.Log("[FishPond] 모델 방향 확인: 모두 머리가 오른쪽(→)을 향해야 합니다. 옆모습 물고기는 등이 위, 거북·가오리·상어는 등이 보여야 합니다.");
         }
     }

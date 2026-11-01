@@ -70,9 +70,8 @@ namespace FishPond
             for (int i = 0; i < 10; i++)
             {
                 var p = Dir(rf() * 360f) * R * (0.25f + rf() * 0.65f);
-                if (i % 3 == 0) Spr(env, "starfish", Art.Starfish, WithAlpha(CoralColors[rnd.Next(5)], 0.55f), 3, p, Vector2.one * R * 0.05f, rf() * 360f, 0.6f);
-                else if (i % 3 == 1) Spr(env, "scallop", Art.Scallop, new Color(0.95f, 0.88f, 0.8f, 0.5f), 3, p, Vector2.one * R * 0.045f, rf() * 360f, 0.6f);
-                else Spr(env, "pebble", Art.Circle, new Color(0.55f, 0.6f, 0.58f, 0.45f), 3, p, new Vector2(R * 0.04f, R * 0.03f), rf() * 360f, 0.6f);
+                var kind = i % 3 == 0 ? DecorKind.Starfish : i % 3 == 1 ? DecorKind.Shell : DecorKind.Rock;
+                PlaceDecor(rnd, kind, p, R * (kind == DecorKind.Rock ? 0.045f : 0.05f), 0.6f, 0.15f, false);
             }
 
             BuildReef(rnd, (rMin, rMax) =>

@@ -11,6 +11,21 @@ namespace FishPond
         Sardine
     }
 
+    /// <summary>배경 장식 종류</summary>
+    public enum DecorKind { Coral, Rock, Anemone, Seaweed, Urchin, Starfish, Shell }
+
+    /// <summary>배경 장식 3D 모델 하나 (위에서 내려다본 모습으로 놓임)</summary>
+    [Serializable]
+    public class DecorDef
+    {
+        public DecorKind kind;
+        public GameObject prefab;
+        [Tooltip("회전 보정. 기준: 모델의 위(+Y)가 카메라(바닥 위) 쪽")]
+        public Vector3 rotation = Vector3.zero;
+        [Tooltip("크기 배율")]
+        public float scale = 1f;
+    }
+
     /// <summary>
     /// 생물 한 종의 설정. 길이·속도는 모두 "연못 반지름" 기준 비율이라
     /// 화면 크기가 달라도 같은 느낌으로 움직입니다.
@@ -110,6 +125,9 @@ namespace FishPond
         public Vector3 sharkRotation = Vector3.zero;
         public float sharkScale = 1f;
         public RuntimeAnimatorController sharkController;
+
+        [Header("배경 장식 (산호·바위·해초 등, 3D 모델)")]
+        public List<DecorDef> decor = new List<DecorDef>();
 
         public static SpeciesCatalog Load() { return Resources.Load<SpeciesCatalog>(ResourcePath); }
 

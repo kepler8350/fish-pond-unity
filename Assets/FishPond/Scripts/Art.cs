@@ -184,27 +184,5 @@ namespace FishPond
                 });
             }
         }
-
-        // ---------------------------------------------------------------- 장식
-        public static Sprite Starfish
-        {
-            get
-            {
-                return Make("star", 128, 128, Center, (x, y) =>
-                {
-                    float dx = (x - 64f) / 62f, dy = (y - 64f) / 62f;
-                    float r = Mathf.Sqrt(dx * dx + dy * dy), th = Mathf.Atan2(dy, dx);
-                    float k = 0.5f + 0.5f * Mathf.Cos(th * 5f);
-                    float f = 0.3f + 0.66f * k * k;
-                    float a = S((f - r) * 62f + 0.5f);
-                    var c = Color.white;
-                    float gx = x / 7f, gy = y / 7f;
-                    float fx = gx - Mathf.Floor(gx) - 0.5f, fy = gy - Mathf.Floor(gy) - 0.5f;
-                    if (fx * fx + fy * fy < 0.07f) c = new Color(1.15f, 1.1f, 1f);
-                    c = Shade(c, Mathf.Lerp(1f, 0.75f, S(r / Mathf.Max(f, 0.01f))));
-                    return WithA(c, a);
-                });
-            }
-        }
     }
 }

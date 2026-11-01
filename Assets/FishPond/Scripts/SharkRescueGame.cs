@@ -196,8 +196,7 @@ namespace FishPond
                 float deg = 180f + (rf() - 0.5f) * 160f;
                 if (!angleFree(deg)) continue;
                 var p = Dir(deg) * Mathf.Lerp(zoneR, C * 0.96f, rf());
-                float sz = C * (0.06f + rf() * 0.07f), sh = 0.18f + rf() * 0.12f;
-                Spr(env, "rock", Art.Circle, new Color(sh, sh + 0.02f, sh + 0.05f), 14, p, new Vector2(sz, sz * (0.6f + rf() * 0.3f)), rf() * 360f, 0.3f);
+                PlaceDecor(rnd, DecorKind.Rock, p, C * (0.06f + rf() * 0.07f), 0.3f, 0.5f, false);
             }
             for (int i = 0; i < 14; i++)
             {
@@ -210,11 +209,11 @@ namespace FishPond
             // 가운데 벽: 바위 줄 + 빛나는 그물 선
             for (float y = -C * 0.95f; y <= C * 0.95f; y += C * 0.075f)
             {
-                float sz = C * (0.07f + rf() * 0.03f), sh = 0.3f + rf() * 0.15f;
+                float sz = C * (0.07f + rf() * 0.03f);
                 var p = new Vector2((rf() - 0.5f) * gap * 0.8f, y);
                 if (p.magnitude > C * 0.96f) continue;
-                Spr(env, "wallRock", Art.Circle, new Color(sh, sh + 0.04f, sh + 0.05f), 28, p, new Vector2(sz, sz * 0.8f), rf() * 360f, 0.1f);
-                if (rnd.Next(3) == 0) Spr(env, "wallCoral", Art.BrainCoral, CoralColors[rnd.Next(CoralColors.Length)], 29, p + new Vector2(gap * 0.7f, 0f), Vector2.one * sz * 0.7f, rf() * 360f, 0.09f);
+                PlaceDecor(rnd, DecorKind.Rock, p, sz, 0.1f, 0.4f, false);
+                if (rnd.Next(3) == 0) PlaceDecor(rnd, DecorKind.Coral, p + new Vector2(gap * 0.7f, 0f), sz * 0.8f, 0.1f, 0.4f, false);
             }
             Spr(env, "fence", Art.Square, new Color(0.55f, 0.95f, 1f, 0.35f), 30, Vector2.zero, new Vector2(C * 0.012f, C * 1.9f), 0f, 0.08f);
 

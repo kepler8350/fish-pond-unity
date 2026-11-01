@@ -224,6 +224,8 @@ namespace FishPond.EditorTools
                 linked++;
                 log.AppendLine("  상어(상어 구조대) ← " + AssetDatabase.GetAssetPath(shark) + (fm > 0 ? "  (재질 " + fm + "개 변환)" : ""));
             }
+            // 배경 장식 (산호·바위·해초 등): 이름으로 찾은 모델을 모두 목록에 추가
+            linked += LinkDecor(cat, log);
             EditorUtility.SetDirty(cat);
             AssetDatabase.SaveAssets();
             if (linked == 0) log.AppendLine("  연결할 모델을 찾지 못했습니다. 에셋을 먼저 가져오세요 (Window > Package Management > My Assets).");
@@ -367,6 +369,55 @@ namespace FishPond.EditorTools
                 dir = parent == null ? null : parent.Replace('\\', '/');
             }
             return null;
+        }
+
+        static readonly Dictionary<DecorKind, string[]> DecorKeywords = new Dictionary<DecorKind, string[]>
+        {
+            { DecorKind.Coral,    new[] { "coral", "sponge" } },
+            { DecorKind.Rock,     new[] { "rock", "stone", "boulder", "pebble" } },
+            { DecorKind.Anemone,  new[] { "anemone" } },
+            { DecorKind.Seaweed,  new[] { "seaweed", "kelp", "algae", "seagrass", "sea_grass" } },
+            { DecorKind.Urchin,   new[] { "urchin" } },
+            { DecorKind.Starfish, new[] { "starfish", "sea_star", "seastar" } },
+            { DecorKind.Shell,    new[] { "shell", "scallop", "clam", "conch" } },
+        };
+
+        /// <summary>장식 회전 보정 (모델 파일 이름 → 회전). 위(+Y)가 카메라 쪽이 기준.</summary>
+        static readonly Dictionary<string, Vector3> KnownDecorFixes = new Dictionary<string, Vector3>(StringComparer.OrdinalIgnoreCase)
+        {
+        };
+
+        static int LinkDecor(SpeciesCatalog cat, StringBuilder log)
+        {
+            if (cat.decor == null) cat.decor = new List<DecorDef>();
+            cat.decor.RemoveAll(d => d == null || d.prefab == null);
+            var used = new HashSet<GameObject>();
+            foreach (var s in cat.species) if (s != null && s.prefabOverride != null) used.Add(s.prefabOverride);
+            if (cat.sharkPrefab != null) used.Add(cat.sharkPrefab);
+            int added = 0;
+            foreach (var guid in AssetDatabase.FindAssets("t:GameObject"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                if (!path.StartsWith("Assets/", StringComparison.Ordinal) || path.StartsWith("Assets/FishPond/", StringComparison.Ordinal)) continue;
+                var file = Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
+                if (file.Contains("fish") && !file.Contains("starfish")) continue;   // "coral fish" 등 물고기 제외
+                DecorKind? kind = null;
+                foreach (var kv in DecorKeywords)
+                {
+                    foreach (var kw in kv.Value) if (file.Contains(kw)) { kind = kv.Key; break; }
+                    if (kind != null) break;
+                }
+                if (kind == null) continue;
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (go == null || used.Contains(go) || go.GetComponentInChildren<Renderer>(true) == null) continue;
+                var def = cat.decor.Find(d => d.prefab == go);
+                if (def == null) { def = new DecorDef { kind = kind.Value, prefab = go }; cat.decor.Add(def); added++; }
+                Vector3 rot;
+                if (KnownDecorFixes.TryGetValue(Path.GetFileNameWithoutExtension(path), out rot)) def.rotation = rot;
+                RepairMaterials(go);
+                log.AppendLine("  장식(" + def.kind + ") ← " + path);
+            }
+            return added;
         }
 
         /// <summary>

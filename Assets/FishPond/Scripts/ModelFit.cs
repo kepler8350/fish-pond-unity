@@ -21,44 +21,7 @@ namespace FishPond
             t.localRotation = baseRot * Quaternion.Euler(rotation);
             t.localScale = Vector3.one;
 
-            // 에셋에 들어 있는 스크립트(데모 이동·군집 등)는 꺼서 게임의 움직임과 싸우지 않게 함
-            foreach (var mb in instance.GetComponentsInChildren<MonoBehaviour>(true)) mb.enabled = false;
-            foreach (var rb in instance.GetComponentsInChildren<Rigidbody>(true)) rb.isKinematic = true;
-            foreach (var c in instance.GetComponentsInChildren<Collider>(true)) c.enabled = false;
-            foreach (var rb in instance.GetComponentsInChildren<Rigidbody2D>(true)) rb.simulated = false;
-            foreach (var c in instance.GetComponentsInChildren<Collider2D>(true)) c.enabled = false;
-            // 모델에 딸려 온 카메라·조명은 끔 (Sketchfab 장면 등)
-            foreach (var cam in instance.GetComponentsInChildren<Camera>(true)) cam.enabled = false;
-            foreach (var lt in instance.GetComponentsInChildren<Light>(true)) lt.enabled = false;
-
-            renderers = instance.GetComponentsInChildren<Renderer>(true);
-            FixMaterials(renderers);
-
-            // 애니메이션: 메카님(Animator)과 레거시(Animation, glTF 가져오기 기본값) 모두 반복 재생
-            foreach (var anim in instance.GetComponentsInChildren<Animator>(true))
-            {
-                if (anim.runtimeAnimatorController == null && controller != null)
-                    anim.runtimeAnimatorController = controller;
-                anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-                anim.applyRootMotion = false;
-            }
-            foreach (var anim in instance.GetComponentsInChildren<Animation>(true))
-            {
-                anim.cullingType = AnimationCullingType.AlwaysAnimate;
-                AnimationClip pick = null, first = null;
-                foreach (AnimationState st in anim)
-                {
-                    if (first == null) first = st.clip;
-                    var n = st.name.ToLowerInvariant();
-                    if (pick == null && (n.Contains("swim") || n.Contains("idle") || n.Contains("loop"))) pick = st.clip;
-                }
-                if (pick == null) pick = first;
-                if (pick == null) continue;
-                anim.wrapMode = WrapMode.Loop;
-                anim[pick.name].wrapMode = WrapMode.Loop;
-                anim[pick.name].time = Random.value * pick.length;
-                anim.Play(pick.name);
-            }
+            renderers = Prepare(instance, controller);
 
             // 길이(진행 방향 = 로컬 X)가 L이 되도록 맞추고 가운데 정렬
             bool has = false;
@@ -87,6 +50,53 @@ namespace FishPond
                 t.localPosition = new Vector3(-center.x * s, -center.y * s, 0f);
             }
             return instance;
+        }
+
+        /// <summary>
+        /// 가져온 모델 정리: 딸린 스크립트·물리·카메라·조명은 끄고, 못 그리는 재질은 바꾸고, 애니메이션은 반복 재생.
+        /// </summary>
+        public static Renderer[] Prepare(GameObject instance, RuntimeAnimatorController controller)
+        {
+            // 에셋에 들어 있는 스크립트(데모 이동·군집 등)는 꺼서 게임의 움직임과 싸우지 않게 함
+            foreach (var mb in instance.GetComponentsInChildren<MonoBehaviour>(true)) mb.enabled = false;
+            foreach (var rb in instance.GetComponentsInChildren<Rigidbody>(true)) rb.isKinematic = true;
+            foreach (var c in instance.GetComponentsInChildren<Collider>(true)) c.enabled = false;
+            foreach (var rb in instance.GetComponentsInChildren<Rigidbody2D>(true)) rb.simulated = false;
+            foreach (var c in instance.GetComponentsInChildren<Collider2D>(true)) c.enabled = false;
+            // 모델에 딸려 온 카메라·조명은 끔 (Sketchfab 장면 등)
+            foreach (var cam in instance.GetComponentsInChildren<Camera>(true)) cam.enabled = false;
+            foreach (var lt in instance.GetComponentsInChildren<Light>(true)) lt.enabled = false;
+
+            var renderers = instance.GetComponentsInChildren<Renderer>(true);
+            FixMaterials(renderers);
+
+            // 애니메이션: 메카님(Animator)과 레거시(Animation, glTF 가져오기 기본값) 모두 반복 재생
+            foreach (var anim in instance.GetComponentsInChildren<Animator>(true))
+            {
+                if (anim.runtimeAnimatorController == null && controller != null)
+                    anim.runtimeAnimatorController = controller;
+                anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                anim.applyRootMotion = false;
+            }
+            foreach (var anim in instance.GetComponentsInChildren<Animation>(true))
+            {
+                anim.cullingType = AnimationCullingType.AlwaysAnimate;
+                AnimationClip pick = null, first = null;
+                foreach (AnimationState st in anim)
+                {
+                    if (first == null) first = st.clip;
+                    var n = st.name.ToLowerInvariant();
+                    if (pick == null && (n.Contains("swim") || n.Contains("idle") || n.Contains("loop"))) pick = st.clip;
+                }
+                if (pick == null) pick = first;
+                if (pick == null) continue;
+                anim.wrapMode = WrapMode.Loop;
+                anim[pick.name].wrapMode = WrapMode.Loop;
+                anim[pick.name].time = Random.value * pick.length;
+                anim.Play(pick.name);
+            }
+
+            return renderers;
         }
 
         static Shader standard;

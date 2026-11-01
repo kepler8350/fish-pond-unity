@@ -212,7 +212,6 @@ namespace FishPond
             if (env != null) Destroy(env.gameObject);
             env = new GameObject("Environment").transform;
             env.SetParent(stage, false);
-            seaweeds.Clear();
             swayers.Clear();
             BuildEnvironment();
             LayoutTexts();
@@ -302,18 +301,8 @@ namespace FishPond
         }
 
         // ================================================================ 산호초 꾸미기 (두 게임 공통)
-        protected static readonly Color[] CoralColors =
-        {
-            new Color(1f, 0.45f, 0.42f), new Color(1f, 0.62f, 0.28f), new Color(0.98f, 0.42f, 0.7f),
-            new Color(0.68f, 0.48f, 0.98f), new Color(1f, 0.86f, 0.42f), new Color(0.4f, 0.86f, 0.76f),
-            new Color(0.97f, 0.93f, 0.84f), new Color(0.55f, 0.85f, 0.4f)
-        };
-
-        protected class Seaweed { public LineRenderer line; public Vector2 root; public float angle, length, phase; }
-        protected class Swayer { public Transform t; public float baseScale, phase, baseRot; }
-        protected readonly List<Seaweed> seaweeds = new List<Seaweed>();
+        protected class Swayer { public Transform t; public Vector3 baseScale; public float phase, baseRot; }
         protected readonly List<Swayer> swayers = new List<Swayer>();
-        readonly Vector3[] weedBuf = new Vector3[7];
         float bubbleT;
 
         /// <summary>
@@ -325,95 +314,56 @@ namespace FishPond
             float C = circleR;
             System.Func<int, int> Count = n => Mathf.Max(1, Mathf.RoundToInt(n * density));
 
-            for (int i = 0; i < Count(26); i++)
-            {
-                var p = spot(rMin * 0.98f, rMax);
-                float sz = C * (0.05f + rf() * 0.06f), sh = 0.25f + rf() * 0.18f;
-                float rot = rf() * 360f;
-                Spr(env, "rock", Art.Circle, new Color(sh, sh + 0.04f, sh + 0.05f), 14, p, new Vector2(sz, sz * (0.65f + rf() * 0.3f)), rot, 0.3f);
-                Spr(env, "rockLight", Art.Circle, new Color(1f, 1f, 1f, 0.09f), 14, p + new Vector2(-0.2f, 0.25f) * sz, new Vector2(sz * 0.5f, sz * 0.35f), rot, 0.29f);
-            }
+            // 모든 장식은 3D 에셋 (없는 종류는 건너뜀)
+            for (int i = 0; i < Count(22); i++)
+                PlaceDecor(rnd, DecorKind.Rock, spot(rMin * 0.98f, rMax), C * (0.05f + rf() * 0.06f), 0.3f, 0.5f, false);
             for (int i = 0; i < Count(10); i++)
-            {
-                var p = spot(rMin, rMax * 0.98f);
-                if (i % 2 == 0) Spr(env, "starfish", Art.Starfish, CoralColors[rnd.Next(5)], 15, p, Vector2.one * C * 0.05f, rf() * 360f, 0.28f);
-                else Spr(env, "scallop", Art.Scallop, new Color(0.98f, 0.9f, 0.82f), 15, p, Vector2.one * C * 0.045f, rf() * 360f, 0.28f);
-            }
-            for (int i = 0; i < Count(95); i++)
+                PlaceDecor(rnd, i % 2 == 0 ? DecorKind.Starfish : DecorKind.Shell, spot(rMin, rMax * 0.98f), C * 0.05f, 0.28f, 0.15f, false);
+            for (int i = 0; i < Count(70); i++)
             {
                 var p = spot(rMin, rMax);
-                var col = CoralColors[rnd.Next(CoralColors.Length)];
                 float outer = Mathf.InverseLerp(rMin, C, p.magnitude);
-                float sz = C * (0.06f + rf() * 0.07f + outer * 0.07f);
-                int kind = rnd.Next(5);
-                Sprite sp;
-                switch (kind)
-                {
-                    case 0: sp = Art.BrainCoral; break;
-                    case 1: sp = Art.Staghorn(rnd.Next(6)); sz *= 1.25f; break;
-                    case 2: sp = Art.SeaFan(rnd.Next(6)); sz *= 1.3f; break;
-                    case 3: sp = Art.TubeSponge(rnd.Next(6)); break;
-                    default: sp = Art.PlateCoral; sz *= 1.15f; break;
-                }
-                float rot = kind == 2 ? Mathf.Atan2(-p.y, -p.x) * Mathf.Rad2Deg - 90f + (rf() - 0.5f) * 40f : rf() * 360f;
-                Spr(env, "coral", sp, col, 16 + rnd.Next(8), p, Vector2.one * sz, rot, 0.25f);
+                PlaceDecor(rnd, DecorKind.Coral, p, C * (0.07f + rf() * 0.07f + outer * 0.07f), 0.22f, 0.6f, false);
             }
             for (int i = 0; i < Count(8); i++)
-            {
-                var p = spot(rMin * 1.03f, rMax * 0.96f);
-                var col = i % 2 == 0 ? new Color(1f, 0.55f, 0.75f) : new Color(0.7f, 0.55f, 1f);
-                var sr = Spr(env, "anemone", Art.Anemone, col, 25, p, Vector2.one * C * 0.11f, rf() * 360f, 0.2f);
-                swayers.Add(new Swayer { t = sr.transform, baseScale = C * 0.11f, phase = rf() * 10f, baseRot = sr.transform.localEulerAngles.z });
-            }
+                PlaceDecor(rnd, DecorKind.Anemone, spot(rMin * 1.03f, rMax * 0.96f), C * 0.1f, 0.18f, 0.4f, true);
             for (int i = 0; i < Count(7); i++)
-                Spr(env, "urchin", Art.Urchin, Color.white, 26, spot(rMin, rMax * 0.98f), Vector2.one * C * (0.035f + rf() * 0.02f), rf() * 360f, 0.19f);
-            for (int i = 0; i < Count(34); i++)
+                PlaceDecor(rnd, DecorKind.Urchin, spot(rMin, rMax * 0.98f), C * (0.035f + rf() * 0.02f), 0.17f, 0.2f, false);
+            for (int i = 0; i < Count(26); i++)
             {
                 var root = spot(rMin * 1.01f, rMax * 0.99f);
-                bool brown = rf() < 0.3f;
-                AddKelp(root, Mathf.Atan2(-root.y, -root.x) + (rf() - 0.5f) * 1.6f, C * (0.09f + rf() * 0.1f), C * (0.018f + rf() * 0.012f), brown, rf() * 10f);
+                AddKelp(root, Mathf.Atan2(-root.y, -root.x) + (rf() - 0.5f) * 1.6f, C * (0.09f + rf() * 0.1f), 0f, false, rf() * 10f);
             }
         }
 
+        /// <summary>3D 장식 하나 놓기. sway = 물결에 살랑임</summary>
+        protected Transform PlaceDecor(System.Random rnd, DecorKind kind, Vector2 p, float size, float zFront, float maxDepth, bool sway)
+        {
+            var d = Decor.Pick(rnd, kind);
+            if (d == null) return null;
+            float yaw = (float)rnd.NextDouble() * 360f;
+            var t = Decor.Place(d, env, p, size, yaw, zFront, maxDepth);
+            if (t != null && sway)
+                swayers.Add(new Swayer { t = t, baseScale = t.localScale, phase = (float)rnd.NextDouble() * 10f, baseRot = yaw });
+            return t;
+        }
+
+        /// <summary>해초 (3D 에셋). 뿌리에서 바깥쪽으로 length만큼 덮도록 놓음</summary>
         protected void AddKelp(Vector2 root, float angle, float length, float width, bool brown, float phase)
         {
-            var g = new GameObject("kelp");
-            g.transform.SetParent(env, false);
-            g.transform.localPosition = new Vector3(0f, 0f, 0.15f);
-            var lr = g.AddComponent<LineRenderer>();
-            lr.useWorldSpace = false;
-            lr.positionCount = weedBuf.Length;
-            lr.sharedMaterial = Art.Unlit;
-            lr.alignment = LineAlignment.TransformZ;
-            lr.numCapVertices = 3;
-            lr.widthCurve = new AnimationCurve(new Keyframe(0f, 0.6f), new Keyframe(0.4f, 1f), new Keyframe(1f, 0.25f));
-            lr.widthMultiplier = width;
-            lr.startColor = brown ? new Color(0.45f, 0.38f, 0.12f, 0.95f) : new Color(0.1f, 0.42f, 0.22f, 0.95f);
-            lr.endColor = brown ? new Color(0.7f, 0.62f, 0.25f, 0.8f) : new Color(0.38f, 0.75f, 0.35f, 0.8f);
-            lr.sortingOrder = 27;
-            seaweeds.Add(new Seaweed { line = lr, root = root, angle = angle, length = length, phase = phase });
+            var rnd = new System.Random(Mathf.RoundToInt(phase * 1000f) + Mathf.RoundToInt(root.x * 7919f));
+            var p = root + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * length * 0.35f;
+            PlaceDecor(rnd, DecorKind.Seaweed, p, length, 0.14f, 0.5f, true);
         }
 
         /// <summary>해초·말미잘 흔들림, 거품</summary>
         void UpdateAmbient(float dt)
         {
-            foreach (var w in seaweeds)
-            {
-                var p = w.root;
-                float seg = w.length / (weedBuf.Length - 1);
-                for (int k = 0; k < weedBuf.Length; k++)
-                {
-                    float s = k / (weedBuf.Length - 1f);
-                    float a = w.angle + Mathf.Sin(clock * 1.3f + w.phase + s * 2f) * 0.4f * s;
-                    weedBuf[k] = p;
-                    p += new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * seg;
-                }
-                w.line.SetPositions(weedBuf);
-            }
             foreach (var sw in swayers)
             {
-                float k = 1f + 0.06f * Mathf.Sin(clock * 1.7f + sw.phase);
-                sw.t.localScale = new Vector3(sw.baseScale * k, sw.baseScale * k, 1f);
+                if (sw.t == null) continue;
+                float k = 1f + 0.05f * Mathf.Sin(clock * 1.7f + sw.phase);
+                sw.t.localScale = new Vector3(sw.baseScale.x * k, sw.baseScale.y * k, sw.baseScale.z);
                 sw.t.localRotation = Quaternion.Euler(0, 0, sw.baseRot + Mathf.Sin(clock * 0.9f + sw.phase) * 8f);
             }
             bubbleT -= dt;
