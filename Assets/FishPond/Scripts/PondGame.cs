@@ -316,14 +316,14 @@ namespace FishPond
 
             // 모든 장식은 3D 에셋 (없는 종류는 건너뜀)
             for (int i = 0; i < Count(22); i++)
-                PlaceDecor(rnd, DecorKind.Rock, spot(rMin * 0.98f, rMax), C * (0.05f + rf() * 0.06f), 0.3f, 0.5f, false);
+                PlaceDecor(rnd, DecorKind.Rock, spot(rMin * 0.98f, rMax), C * (0.06f + rf() * 0.07f), 0.3f, 0.5f, false);
             for (int i = 0; i < Count(10); i++)
                 PlaceDecor(rnd, i % 2 == 0 ? DecorKind.Starfish : DecorKind.Shell, spot(rMin, rMax * 0.98f), C * 0.05f, 0.28f, 0.15f, false);
-            for (int i = 0; i < Count(70); i++)
+            for (int i = 0; i < Count(115); i++)
             {
                 var p = spot(rMin, rMax);
                 float outer = Mathf.InverseLerp(rMin, C, p.magnitude);
-                PlaceDecor(rnd, DecorKind.Coral, p, C * (0.07f + rf() * 0.07f + outer * 0.07f), 0.22f, 0.6f, false);
+                PlaceDecor(rnd, DecorKind.Coral, p, C * (0.09f + rf() * 0.08f + outer * 0.08f), 0.22f, 0.6f, false);
             }
             for (int i = 0; i < Count(8); i++)
                 PlaceDecor(rnd, DecorKind.Anemone, spot(rMin * 1.03f, rMax * 0.96f), C * 0.1f, 0.18f, 0.4f, true);
