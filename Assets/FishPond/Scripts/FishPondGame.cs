@@ -90,7 +90,7 @@ namespace FishPond
             {
                 float a = rf() * Mathf.PI * 2f;
                 return new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * R * (0.2f + rf() * 0.65f);
-            }, 7, R * 0.07f, true);
+            }, 8, R * 0.12f, true);
             AddEdgeShade();
         }
 
