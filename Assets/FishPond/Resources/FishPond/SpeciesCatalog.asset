@@ -200,6 +200,25 @@ MonoBehaviour:
   sharkRotation: {x: 0, y: 180, z: 0}
   sharkScale: 1
   sharkController: {fileID: 0}
+  seabedPrefab: {fileID: -6689036041284674117, guid: b28f36eb0964e714aa00c45f08384bbf, type: 3}
+  seabedRotation: {x: 0, y: 0, z: 0}
+  causticFrames:
+  - {fileID: 2800000, guid: 86c095060d32b3743a8331b4ee7b6e63, type: 3}
+  - {fileID: 2800000, guid: d72e8f01e6ec0c3479da5c94584d317e, type: 3}
+  - {fileID: 2800000, guid: 88cd2a8db5ea2ed409a266b44c37fa80, type: 3}
+  - {fileID: 2800000, guid: 5ad75bbac6539c84ebdfe4ed17d4bce6, type: 3}
+  - {fileID: 2800000, guid: 75646950aa6d81341a571968df8485a9, type: 3}
+  - {fileID: 2800000, guid: 239e06cd2917bb34ba7f18e10e43e1ba, type: 3}
+  - {fileID: 2800000, guid: 3f70b60044096a44384eadaf726756bf, type: 3}
+  - {fileID: 2800000, guid: 5ac9ec1fbaefded49823a22e09943300, type: 3}
+  - {fileID: 2800000, guid: 52d9e05e6e5f79b41a5c4655d61920f7, type: 3}
+  - {fileID: 2800000, guid: 4f7874b0eac3832459a75606b568f23f, type: 3}
+  - {fileID: 2800000, guid: 994590a6c5329224791932d6a830a4b0, type: 3}
+  - {fileID: 2800000, guid: 969f13eb665366b40b5746f411b0df31, type: 3}
+  - {fileID: 2800000, guid: 65161cf9261f8854583dfac6a0104e58, type: 3}
+  - {fileID: 2800000, guid: 5d72e3e9c39e064419dcffcb17e7084d, type: 3}
+  - {fileID: 2800000, guid: 69794559e0e758a4a8bf97675b30d3f2, type: 3}
+  - {fileID: 2800000, guid: 84dc81b7ebd1d4b4cb12c4489264d296, type: 3}
   decor:
   - kind: 1
     prefab: {fileID: -6689036041284674117, guid: 9d89fa10c56ddb546a906be75f829457, type: 3}
