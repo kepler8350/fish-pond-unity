@@ -121,7 +121,7 @@ MonoBehaviour:
     catchable: 1
     prefabOverride: {fileID: -6689036041284674117, guid: e8fed1c69d8de654ba56ac3cc9f7f696, type: 3}
     prefabSideView: 0
-    prefabRotation: {x: -90, y: 0, z: 180}
+    prefabRotation: {x: -90, y: 180, z: 180}
     prefabTilt: 30
     prefabScale: 1
     animatorController: {fileID: 0}
