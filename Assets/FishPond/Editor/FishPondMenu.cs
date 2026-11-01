@@ -540,7 +540,7 @@ namespace FishPond.EditorTools
             { "minna_no_ennichi_pufferfish",            new Fix(true, -90f, 0f, 0f) },
             { "oxidane_-_yellow_tang",                  new Fix(true, -90f, 0f, 90f) },
             { "lined_butterflyfish",                    new Fix(true, -90f, 0f, -90f) },
-            { "lion_fish",                              new Fix(true, -90f, 0f, 180f) },
+            { "lion_fish",                              new Fix(true, -90f, 180f, 180f) },
             { "model_53a_-_flatback_sea_turtle",        new Fix(false, 0f, 0f, 0f) },
             { "bullnose_eagle_ray_-_myliobatis_freminvillii", new Fix(false, -90f, 0f, 90f) },
             { "great_white_shark",                      new Fix(false, 0f, 180f, 0f) },
