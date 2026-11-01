@@ -155,7 +155,17 @@ namespace FishPond
             pivot = Node(root, "pivot", Vector2.zero);
             sideView = def.prefabSideView;
             instance = ModelFit.Spawn(def.prefabOverride, pivot, L, def.prefabSideView, def.prefabRotation, def.prefabScale, def.prefabTilt, def.animatorController, out renderers);
+
+            // 움직임이 없는 물고기 모델은 헤엄 셰이더로 꼬리·지느러미를 흔듦
+            bool fish = !(def.id == SpeciesId.SeaTurtle || def.id == SpeciesId.Stingray || def.id == SpeciesId.Octopus
+                          || def.id == SpeciesId.Jellyfish || def.id == SpeciesId.Squid);
+            if (fish && !ModelFit.HasAnimation(instance))
+                swimRenderers = ModelFit.ApplySwim(renderers, root.TransformDirection(Vector3.right), root.TransformDirection(Vector3.up), 0.09f);
         }
+
+        Renderer[] swimRenderers;
+        MaterialPropertyBlock mpb;
+        float swimPhase = Random.value * 10f;
 
         public override void SetSorting(int baseOrder)
         {
@@ -175,6 +185,19 @@ namespace FishPond
         /// </summary>
         public override void Animate(float dt, float swim, float worldScale)
         {
+            if (swimRenderers != null && swimRenderers.Length > 0)
+            {
+                // 빨리 헤엄칠수록 꼬리를 빠르게
+                swimPhase += dt * (5f + swim * 9f);
+                if (mpb == null) mpb = new MaterialPropertyBlock();
+                foreach (var r in swimRenderers)
+                {
+                    if (r == null) continue;
+                    r.GetPropertyBlock(mpb);
+                    mpb.SetFloat("_SwimPhase", swimPhase);
+                    r.SetPropertyBlock(mpb);
+                }
+            }
             if (!sideView) return;
             float upY = root.up.y;
             if (upY < -0.15f) rollTarget = 180f;

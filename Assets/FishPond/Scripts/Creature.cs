@@ -186,14 +186,14 @@ namespace FishPond
                 }
             }
             Vector2 threat;
-            if (g.Threat(this, out threat)) { desired = Ang(pos - threat); boost = 1f; }
+            if (g.Threat(this, out threat)) { desired = Ang(pos - threat); boost = Mathf.Max(boost, 0.5f); }
             desired = AwayFromEdge(desired, 0.8f);
 
             if (puffT > 0f) { puffT -= dt; puffK = Mathf.MoveTowards(puffK, 1f, dt * 5f); }
             else puffK = Mathf.MoveTowards(puffK, 0f, dt * 1.2f);
 
             Steer(desired, turnRate + boost * 4f, dt);
-            float spd = def.speed * g.settings.fishSpeed * R * (1f + boost * 1.8f) * (hold > 0f ? 0.3f : 1f) * (1f - 0.55f * puffK);
+            float spd = def.speed * g.settings.fishSpeed * R * (1f + boost * 1.1f) * (hold > 0f ? 0.3f : 1f) * (1f - 0.55f * puffK);
             pos += Dir(heading) * spd * dt;
             boost = Mathf.Max(0f, boost - dt * 0.8f);
             swimAnim = Mathf.Clamp01(spd / (R * 0.6f));

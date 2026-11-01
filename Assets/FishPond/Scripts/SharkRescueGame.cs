@@ -226,7 +226,7 @@ namespace FishPond
                     if (p.x < -gap - zoneR * 0.12f) return p;
                 }
                 return new Vector2(-zoneR * 0.5f, 0f);
-            }, 4, zoneR * 0.1f, false);
+            }, 4, zoneR * 0.16f, false);
             BuildFloorClusters(rnd, () =>
             {
                 for (int k = 0; k < 30; k++)
@@ -235,7 +235,7 @@ namespace FishPond
                     if (p.x > gap + zoneR * 0.12f) return p;
                 }
                 return new Vector2(zoneR * 0.5f, 0f);
-            }, 4, zoneR * 0.1f, true);
+            }, 4, zoneR * 0.16f, true);
             AddEdgeShade();
         }
 

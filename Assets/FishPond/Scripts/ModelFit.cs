@@ -87,15 +87,17 @@ namespace FishPond
             foreach (var anim in instance.GetComponentsInChildren<Animation>(true))
             {
                 anim.cullingType = AnimationCullingType.AlwaysAnimate;
-                AnimationClip pick = null, first = null;
+                // 이름에 swim/idle/loop가 있는 동작 우선, 없으면 가장 긴 동작 (첫 동작이 빈 경우가 있음)
+                AnimationClip pick = null, longest = null;
                 foreach (AnimationState st in anim)
                 {
-                    if (first == null) first = st.clip;
+                    if (st.clip == null) continue;
+                    if (longest == null || st.clip.length > longest.length) longest = st.clip;
                     var n = st.name.ToLowerInvariant();
-                    if (pick == null && (n.Contains("swim") || n.Contains("idle") || n.Contains("loop"))) pick = st.clip;
+                    if (pick == null && st.clip.length > 0.2f && (n.Contains("swim") || n.Contains("idle") || n.Contains("loop"))) pick = st.clip;
                 }
-                if (pick == null) pick = first;
-                if (pick == null) continue;
+                if (pick == null) pick = longest;
+                if (pick == null || pick.length <= 0.01f) continue;
                 anim.wrapMode = WrapMode.Loop;
                 anim[pick.name].wrapMode = WrapMode.Loop;
                 anim[pick.name].time = Random.value * pick.length;
@@ -103,6 +105,84 @@ namespace FishPond
             }
 
             return renderers;
+        }
+
+        /// <summary>모델에 실제로 움직이는 애니메이션이 들어 있는지</summary>
+        public static bool HasAnimation(GameObject instance)
+        {
+            foreach (var a in instance.GetComponentsInChildren<Animator>(true))
+                if (a.runtimeAnimatorController != null) return true;
+            foreach (var a in instance.GetComponentsInChildren<Animation>(true))
+                foreach (AnimationState st in a)
+                    if (st.clip != null && st.clip.length > 0.2f) return true;
+            return false;
+        }
+
+        static Shader swimShader;
+
+        /// <summary>
+        /// 움직임이 없는 물고기 모델에 헤엄 셰이더를 입힘 (꼬리·지느러미 쪽이 좌우로 물결침).
+        /// headWorld = 머리 방향, sideWorld = 꼬리가 흔들리는 방향 (월드 기준). 반환값으로 매 프레임 위상을 넘김.
+        /// </summary>
+        public static Renderer[] ApplySwim(Renderer[] rs, Vector3 headWorld, Vector3 sideWorld, float amp)
+        {
+            if (swimShader == null) swimShader = Shader.Find("FishPond/FishSwim");
+            if (swimShader == null) return new Renderer[0];
+            var done = new System.Collections.Generic.List<Renderer>();
+            foreach (var r in rs)
+            {
+                if (r == null || r is ParticleSystemRenderer) continue;
+                Mesh mesh = null;
+                var smr = r as SkinnedMeshRenderer;
+                if (smr != null) mesh = smr.sharedMesh;
+                else { var mf = r.GetComponent<MeshFilter>(); if (mf != null) mesh = mf.sharedMesh; }
+                if (mesh == null) continue;
+                var axis = r.transform.InverseTransformDirection(headWorld).normalized;
+                var side = r.transform.InverseTransformDirection(sideWorld).normalized;
+                var b = mesh.bounds;
+                float lo = float.MaxValue, hi = float.MinValue;
+                for (int i = 0; i < 8; i++)
+                {
+                    var c = new Vector3((i & 1) == 0 ? b.min.x : b.max.x, (i & 2) == 0 ? b.min.y : b.max.y, (i & 4) == 0 ? b.min.z : b.max.z);
+                    float d = Vector3.Dot(c, axis);
+                    lo = Mathf.Min(lo, d); hi = Mathf.Max(hi, d);
+                }
+                var mats = r.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    var src = mats[i];
+                    var m = new Material(swimShader) { name = (src != null ? src.name : "Fish") + " (Swim)" };
+                    if (src != null)
+                    {
+                        var tex = FindTex(src, "basecolor", "maintex", "albedo", "diffuse");
+                        if (tex != null) m.SetTexture("_MainTex", tex);
+                        foreach (var cp in new[] { "_Color", "_BaseColor", "baseColorFactor" })
+                            if (src.HasProperty(cp)) { m.SetColor("_Color", src.GetColor(cp)); break; }
+                        var nrm = FindTex(src, "bump", "normal");
+                        if (nrm != null) m.SetTexture("_BumpMap", nrm);
+                    }
+                    m.SetVector("_SwimAxis", new Vector4(axis.x, axis.y, axis.z, 0f));
+                    m.SetVector("_SwimSide", new Vector4(side.x, side.y, side.z, 0f));
+                    m.SetFloat("_SwimHead", hi);
+                    m.SetFloat("_SwimLength", Mathf.Max(hi - lo, 1e-5f));
+                    m.SetFloat("_SwimAmp", amp);
+                    mats[i] = m;
+                }
+                r.sharedMaterials = mats;
+                done.Add(r);
+            }
+            return done.ToArray();
+        }
+
+        static Texture FindTex(Material m, params string[] hints)
+        {
+            foreach (var name in m.GetTexturePropertyNames())
+            {
+                var n = name.ToLowerInvariant();
+                foreach (var h in hints)
+                    if (n.Contains(h)) { var t = m.GetTexture(name); if (t != null) return t; }
+            }
+            return null;
         }
 
         static Shader standard;
