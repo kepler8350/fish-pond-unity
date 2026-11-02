@@ -309,6 +309,7 @@ namespace FishPond.EditorTools
                     def.prefabRotation = Vector3.zero;
                 }
                 def.prefabOverride = model;
+                if (EnsureLegacyAnimation(model)) log.AppendLine("  (애니메이션을 Legacy 방식으로 다시 가져옴: " + model.name + ")");
                 ApplyKnownFix(model, ref def.prefabSideView, ref def.prefabRotation);
                 // 바닥에 투사하므로 모든 생물은 위에서 내려다본 모습. 납작한 물고기는 옆구리가 살짝 보이게 기울임
                 def.prefabSideView = false;
@@ -593,6 +594,25 @@ namespace FishPond.EditorTools
             { "octopus",                                new Fix(false, 0f, 0f, 0f) },
             { "fishing_net_rede_de_pesca",              new Fix(false, 90f, 0f, 0f) },
         };
+
+        /// <summary>
+        /// glTFast로 가져온 glb의 애니메이션을 Legacy 방식으로 바꿉니다 (게임이 Animation 컴포넌트로 재생).
+        /// 기본값(Mecanim)은 컨트롤러가 없어 움직이지 않습니다. 바꿨으면 true.
+        /// </summary>
+        static bool EnsureLegacyAnimation(GameObject model)
+        {
+            var path = AssetDatabase.GetAssetPath(model);
+            if (string.IsNullOrEmpty(path) || !path.EndsWith(".glb", StringComparison.OrdinalIgnoreCase)) return false;
+            var importer = AssetImporter.GetAtPath(path);
+            if (importer == null) return false;
+            var so = new SerializedObject(importer);
+            var prop = so.FindProperty("importSettings.animationMethod");
+            if (prop == null || prop.intValue == 1) return false;   // 1 = Legacy
+            prop.intValue = 1;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            importer.SaveAndReimport();
+            return true;
+        }
 
         static void ApplyKnownFix(GameObject model, ref bool side, ref Vector3 rot)
         {
