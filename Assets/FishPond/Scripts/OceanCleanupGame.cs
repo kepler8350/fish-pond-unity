@@ -24,7 +24,8 @@ namespace FishPond
         const float CalmTail = 15f;        // 마지막 몇 초는 새 쓰레기 없음
         const int MaxTrash = 22;
 
-        float health = 1f;                  // 바다 건강 0~1
+        float health = 1f;
+        SpriteRenderer murk;                  // 바다 건강 0~1
         float trashT, fishT, bleachShown = -1f;
         int trashCleared, trashArrived;
         bool cleanCelebrated;
@@ -102,6 +103,8 @@ namespace FishPond
                 return new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * R * (0.2f + rf() * 0.65f);
             }, 8, R * 0.2f, true);
             AddEdgeShade();
+            // 오염된 바다: 쓰레기가 많을수록 물 전체가 탁한 녹갈색으로 흐려짐 (생물 아래, 산호 위)
+            murk = Spr(env, "murk", Art.Circle, new Color(0.25f, 0.22f, 0.12f, 0f), 36, Vector2.zero, Vector2.one * circleR * 1.96f, 0f, 0.12f);
             bleachShown = -1f;
         }
 
@@ -159,8 +162,8 @@ namespace FishPond
             if (fishT <= 0f && FishCount() < wantFish) { SpawnFish(); fishT = 0.8f; }
 
             // 바다 건강: 쓰레기 수에 따라 천천히 따라감
-            float target = 1f - Mathf.Clamp01(trash / 14f);
-            float rate = target > health ? 0.12f : 0.035f;     // 회복은 빠르게, 나빠지는 건 천천히
+            float target = 1f - Mathf.Clamp01(trash / (float)MaxTrash);
+            float rate = target > health ? 0.12f : 0.02f;     // 회복은 빠르게, 나빠지는 건 천천히
             health = Mathf.MoveTowards(health, target, rate * dt);
             ApplyReefHealth();
         }
@@ -185,7 +188,9 @@ namespace FishPond
             if (Mathf.Abs(bleach - bleachShown) < 0.02f) return;
             bleachShown = bleach;
             if (mpb == null) mpb = new MaterialPropertyBlock();
-            var dead = new Color(0.5f, 0.47f, 0.42f);
+            if (murk != null) murk.color = new Color(0.25f, 0.22f, 0.12f, 0.42f * bleach);
+            // 색을 곱하는 방식이라 질감 색은 남으므로, 어둡고 누런 회갈색으로 눌러서 시든 느낌을 냄
+            var dead = new Color(0.4f, 0.36f, 0.3f);
             foreach (var t in livingDecor)
             {
                 if (t == null) continue;
@@ -210,7 +215,7 @@ namespace FishPond
                         if (mats[m] == null) continue;
                         var bc = baseCols[m];
                         float lum = bc.r * 0.3f + bc.g * 0.59f + bc.b * 0.11f;
-                        var target = new Color(dead.r * lum * 1.6f, dead.g * lum * 1.6f, dead.b * lum * 1.6f, bc.a);
+                        var target = new Color(dead.r * lum, dead.g * lum, dead.b * lum, bc.a);
                         var c = Color.Lerp(bc, target, bleach);
                         r.GetPropertyBlock(mpb, m);
                         foreach (var p in ColorProps) if (mats[m].HasProperty(p)) mpb.SetColor(p, c);
@@ -300,7 +305,7 @@ namespace FishPond
             ClearCreatures();
             health = 0.75f;
             for (int i = 0; i < settings.creatureCount / 2; i++) SpawnFish();
-            for (int i = 0; i < 10; i++) SpawnTrash(true);
+            for (int i = 0; i < 8; i++) SpawnTrash(true);
         }
 
         protected override void OnEnterReady()
