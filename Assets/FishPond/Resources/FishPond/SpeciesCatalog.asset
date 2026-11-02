@@ -289,7 +289,7 @@ MonoBehaviour:
     catchable: 1
     prefabOverride: {fileID: 8128668236925612103, guid: 51d56544703570e41b54407169122aac, type: 3}
     prefabSideView: 0
-    prefabRotation: {x: 90, y: 0, z: 0}
+    prefabRotation: {x: 0, y: -90, z: 0}
     prefabTilt: 0
     prefabScale: 1
     animatorController: {fileID: 0}
@@ -303,7 +303,7 @@ MonoBehaviour:
     catchable: 0
     prefabOverride: {fileID: 8128668236925612103, guid: 6a798a1ed0c3fda48a676bed7cb4666f, type: 3}
     prefabSideView: 0
-    prefabRotation: {x: 90, y: 0, z: 0}
+    prefabRotation: {x: 0, y: -90, z: 0}
     prefabTilt: 0
     prefabScale: 1
     animatorController: {fileID: 0}
