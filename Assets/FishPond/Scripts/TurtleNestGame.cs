@@ -39,7 +39,7 @@ namespace FishPond
         int saved, eatenEggs, eatenBabies, startEggs;
         bool hatchPhase;
         float crabT, gullT, fishT;
-        Material eggMat, sandMat;
+        Material eggMat;
 
         FloorText[] badges, statusTexts;
 
@@ -187,49 +187,70 @@ namespace FishPond
             AddEdgeShade();
         }
 
-        /// <summary>모래섬: 바닥 모델의 모래 텍스처를 둥글게 오려 물 위에 깖</summary>
+        /// <summary>
+        /// 모래섬: 물 바닥과 같은 모래 모델을 물 층(z 0.95)보다 앞에 한 번 더 깔고,
+        /// 재질을 SandIsland 셰이더로 바꿔 둥글게 오려 냄 (물빛이 덮이지 않은 마른 모래).
+        /// </summary>
         void AddIsland()
         {
             var sh = Shader.Find("FishPond/SandIsland");
-            if (sh == null) return;
-            if (sandMat == null)
+            var cat = SpeciesCatalog.Load();
+            if (sh == null || cat == null || cat.seabedPrefab == null) return;
+            var bed = new DecorDef { kind = DecorKind.Rock, prefab = cat.seabedPrefab, rotation = cat.seabedRotation, scale = 1f };
+            var t = Decor.Place(bed, env, Vector2.zero, islandR * 2.4f, 0f, 0.9f, 0.02f, true);
+            if (t == null) return;
+            t.name = "SandIsland";
+            if (sandMats == null) sandMats = new Dictionary<Material, Material>();
+            foreach (var r in t.GetComponentsInChildren<Renderer>(true))
             {
-                sandMat = new Material(sh) { name = "SandIsland" };
-                var tex = SandTexture();
-                if (tex != null) sandMat.SetTexture("_MainTex", tex);
+                if (!r.enabled) continue;
+                var mats = r.sharedMaterials;
+                for (int m = 0; m < mats.Length; m++)
+                {
+                    var src = mats[m];
+                    if (src == null) continue;
+                    Material dst;
+                    if (!sandMats.TryGetValue(src, out dst))
+                    {
+                        dst = new Material(sh) { name = "SandIsland" };
+                        var tex = MainTexture(src);
+                        if (tex != null) dst.SetTexture("_MainTex", tex);
+                        sandMats[src] = dst;
+                    }
+                    mats[m] = dst;
+                }
+                r.sharedMaterials = mats;
+                r.sortingOrder = 2;
             }
-            float k = 1.15f;   // 해안선 거품이 원 밖으로 조금 나가도록 여유
-            sandMat.SetFloat("_Radius", 1f / k);
-            var g = new GameObject("SandIsland");
-            g.transform.SetParent(env, false);
-            g.transform.localPosition = new Vector3(0f, 0f, 0.9f);
-            g.transform.localScale = new Vector3(islandR * 2f * k, islandR * 2f * k, 1f);
-            g.AddComponent<MeshFilter>().sharedMesh = Art.Quad;
-            var mr = g.AddComponent<MeshRenderer>();
-            mr.sharedMaterial = sandMat;
-            mr.sortingOrder = 2;
+            UpdateIslandShape();
         }
 
-        static Texture SandTexture()
+        Dictionary<Material, Material> sandMats;
+
+        static Texture MainTexture(Material m)
         {
-            var cat = SpeciesCatalog.Load();
-            if (cat == null || cat.seabedPrefab == null) return null;
-            foreach (var r in cat.seabedPrefab.GetComponentsInChildren<Renderer>(true))
+            foreach (var name in m.GetTexturePropertyNames())
             {
-                foreach (var m in r.sharedMaterials)
-                {
-                    if (m == null) continue;
-                    foreach (var name in m.GetTexturePropertyNames())
-                    {
-                        string n = name.ToLowerInvariant();
-                        if (!(n.Contains("basecolor") || n.Contains("maintex") || n.Contains("albedo") || n.Contains("diffuse"))) continue;
-                        var t = m.GetTexture(name);
-                        if (t != null) return t;
-                    }
-                    if (m.mainTexture != null) return m.mainTexture;
-                }
+                string n = name.ToLowerInvariant();
+                if (!(n.Contains("basecolor") || n.Contains("maintex") || n.Contains("albedo") || n.Contains("diffuse"))) continue;
+                var t = m.GetTexture(name);
+                if (t != null) return t;
             }
-            return null;
+            return m.mainTexture;
+        }
+
+        /// <summary>섬 모양(중심·반지름)을 화면 좌표로 셰이더에 알려 줌 (투사 보정으로 무대가 움직여도 맞게)</summary>
+        void UpdateIslandShape()
+        {
+            if (sandMats == null) return;
+            var c = stage.TransformPoint(Vector3.zero);
+            var sc = stage.lossyScale;
+            var size = new Vector4(islandR * Mathf.Abs(sc.x), islandR * Mathf.Abs(sc.y), 0f, 0f);
+            foreach (var m in sandMats.Values)
+            {
+                m.SetVector("_Center", new Vector4(c.x, c.y, 0f, 0f));
+                m.SetVector("_Size", size);
+            }
         }
 
         protected override void LayoutTexts()
@@ -546,6 +567,7 @@ namespace FishPond
         // ================================================================ 진행
         protected override void UpdateGame(float dt)
         {
+            UpdateIslandShape();
             // 바다 물고기 유지
             fishT -= dt;
             int fish = 0;
