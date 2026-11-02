@@ -593,8 +593,8 @@ namespace FishPond.EditorTools
             { "great_white_shark",                      new Fix(false, 0f, 180f, 0f) },
             { "octopus",                                new Fix(false, 0f, 0f, 0f) },
             { "fishing_net_rede_de_pesca",              new Fix(false, 90f, 0f, 0f) },
-            { "dancing_crab_-_uca_mjoebergi",           new Fix(false, 90f, 0f, 0f) },
-            { "seagull",                                new Fix(false, 90f, 0f, 0f) },
+            { "dancing_crab_-_uca_mjoebergi",           new Fix(false, 0f, -90f, 0f) },   // 등이 위, 옆걸음 방향이 진행 방향
+            { "seagull",                                new Fix(false, 0f, -90f, 0f) },   // 등이 위(날개 편 모습), 머리가 진행 방향
         };
 
         /// <summary>
