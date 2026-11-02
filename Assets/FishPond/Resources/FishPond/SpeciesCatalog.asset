@@ -279,6 +279,62 @@ MonoBehaviour:
     prefabTilt: 0
     prefabScale: 1
     animatorController: {fileID: 0}
+  - id: 19
+    displayName: "\uAC8C"
+    points: 1
+    spawnWeight: 0
+    length: 0.12
+    speed: 0.075
+    holdMultiplier: 0.9
+    catchable: 1
+    prefabOverride: {fileID: 8128668236925612103, guid: 51d56544703570e41b54407169122aac, type: 3}
+    prefabSideView: 0
+    prefabRotation: {x: 90, y: 0, z: 0}
+    prefabTilt: 0
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 20
+    displayName: "\uAC08\uB9E4\uAE30"
+    points: 0
+    spawnWeight: 0
+    length: 0.24
+    speed: 0.2
+    holdMultiplier: 1
+    catchable: 0
+    prefabOverride: {fileID: 8128668236925612103, guid: 6a798a1ed0c3fda48a676bed7cb4666f, type: 3}
+    prefabSideView: 0
+    prefabRotation: {x: 90, y: 0, z: 0}
+    prefabTilt: 0
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 21
+    displayName: "\uC544\uAE30 \uAC70\uBD81"
+    points: 1
+    spawnWeight: 0
+    length: 0.08
+    speed: 0.055
+    holdMultiplier: 0.7
+    catchable: 1
+    prefabOverride: {fileID: 0}
+    prefabSideView: 1
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabTilt: 0
+    prefabScale: 1
+    animatorController: {fileID: 0}
+  - id: 22
+    displayName: "\uAC70\uBD81 \uC54C"
+    points: 0
+    spawnWeight: 0
+    length: 0.06
+    speed: 0
+    holdMultiplier: 1
+    catchable: 0
+    prefabOverride: {fileID: -6689036041284674117, guid: f273e212e0a20874081eef0ba24a78ba, type: 3}
+    prefabSideView: 0
+    prefabRotation: {x: 0, y: 0, z: 0}
+    prefabTilt: 0
+    prefabScale: 1
+    animatorController: {fileID: 0}
   sharkPrefab: {fileID: 8128668236925612103, guid: 8d90ce8fb0bcbed4290e5eaf9fb0f15e, type: 3}
   sharkSideView: 0
   sharkRotation: {x: 0, y: 180, z: 0}
