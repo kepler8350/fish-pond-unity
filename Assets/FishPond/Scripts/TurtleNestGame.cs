@@ -335,11 +335,11 @@ namespace FishPond
             if (c == null) return;
             c.heading = (deg + 180f + Random.Range(-40f, 40f)) * Mathf.Deg2Rad;
             c.lift = 2.2f;
-            c.scaleMul = 1.15f;
+            c.scaleMul = 0.7f;   // 날개를 편 폭이 몸길이의 두 배쯤이라 작게
             var a = AddAgent(c, Kind.Gull);
             // 날고 있는 높이를 보여 주는 그림자
             a.shadow = Spr(stage, "gullShadow", Art.SoftCircle, new Color(0f, 0.02f, 0.05f, 0.35f), 9,
-                           c.pos, new Vector2(R * gullDef.length * 0.9f, R * gullDef.length * 0.45f), 0f, 0.2f);
+                           c.pos, new Vector2(R * gullDef.length * 0.7f, R * gullDef.length * 1.1f), 0f, 0.2f);
         }
 
         void Hatch(Creature egg)
