@@ -576,6 +576,7 @@ namespace FishPond.EditorTools
             { "bullnose_eagle_ray_-_myliobatis_freminvillii", new Fix(false, -90f, 0f, 90f) },
             { "great_white_shark",                      new Fix(false, 0f, 180f, 0f) },
             { "octopus",                                new Fix(false, 0f, 0f, 0f) },
+            { "fishing_net_rede_de_pesca",              new Fix(false, 90f, 0f, 0f) },
         };
 
         static void ApplyKnownFix(GameObject model, ref bool side, ref Vector3 rot)
