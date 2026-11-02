@@ -117,6 +117,8 @@ namespace FishPond
             float m = p.magnitude;
             return m > R * f ? p / m * R * f : p;
         }
+        /// <summary>게임이 이 생물을 직접 움직이면 true (헤엄 상태일 때 매 프레임 불림)</summary>
+        public virtual bool MoveCustom(Creature c, float dt) { return false; }
         /// <summary>근처의 천적 (상어 등). 있으면 도망칩니다.</summary>
         public virtual bool Threat(Creature c, out Vector2 from) { from = Vector2.zero; return false; }
         /// <summary>낚시통 안 위치 (통이 있는 게임만)</summary>

@@ -13,6 +13,7 @@ namespace FishPond
         public int creatureCount = 14;
         public int jellyCount = 1;       // 뜰채 바다
         public int sharkCount = 2;       // 상어 구조대
+        public int eggCount = 12;        // 거북이 알 지키기
         public float fishSpeed = 0.55f;  // 물고기 헤엄 속도 배율
         public string flippedSpecies = ""; // 앞뒤를 뒤집어 그릴 생물 (쉼표로 구분한 SpeciesId)
 

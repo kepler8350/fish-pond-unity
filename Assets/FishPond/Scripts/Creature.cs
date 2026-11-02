@@ -66,6 +66,10 @@ namespace FishPond
         }
 
         public bool IsJelly { get { return def.id == SpeciesId.Jellyfish; } }
+
+        /// <summary>게임이 직접 움직일 때 쓰는 값: 헤엄·걷기 애니메이션 세기, 화면 쪽으로 띄우기(날기), 크기 배율</summary>
+        public float Anim { set { swimAnim = value; } }
+        public float lift, scaleMul = 1f;
         public bool InPond { get { return state != State.InBucket; } }
         public float HoldRequired { get { return PondGame.HOLD * def.holdMultiplier * (puffK > 0.5f ? 2f : 1f); } }
         public float Radius(float R) { return def.length * R * size * 0.5f; }
@@ -110,6 +114,7 @@ namespace FishPond
             switch (state)
             {
                 case State.Swim:
+                    if (g.MoveCustom(this, dt)) break;   // 게임이 직접 움직이는 생물 (게·갈매기·아기 거북 등)
                     switch (def.id)
                     {
                         case SpeciesId.Squid: SwimSquid(dt, g); break;
@@ -417,6 +422,7 @@ namespace FishPond
                 }
             }
 
+            if (state == State.Swim) { z -= lift; scale *= scaleMul; if (lift > 0f) order = 70; }
             var t = go.transform;
             t.localPosition = new Vector3(drawPos.x, drawPos.y, z);
             t.localRotation = Quaternion.Euler(0, 0, heading * Mathf.Rad2Deg);

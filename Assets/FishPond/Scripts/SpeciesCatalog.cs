@@ -10,7 +10,9 @@ namespace FishPond
         YellowTang, Butterflyfish, Angelfish, Lionfish, Stingray, SeaTurtle,
         Sardine,
         // 바다 청소대의 쓰레기
-        TrashBottle, TrashBag, TrashCan, TrashCup, TrashNet, TrashTire
+        TrashBottle, TrashBag, TrashCan, TrashCup, TrashNet, TrashTire,
+        // 거북이 알 지키기
+        Crab, Seagull, Hatchling, TurtleEgg
     }
 
     /// <summary>배경 장식 종류</summary>
@@ -104,7 +106,27 @@ namespace FishPond
                 Make(SpeciesId.TrashCup,      "플라스틱 컵", 1, 0.80f, 0.09f, 0.05f, 0.90f, true),
                 Make(SpeciesId.TrashNet,      "버려진 그물", 4, 0.40f, 0.22f, 0.03f, 1.30f, true),
                 Make(SpeciesId.TrashTire,     "타이어",     5, 0.25f, 0.18f, 0.02f, 1.50f, true),
+                // 거북이 알 지키기 (게임이 직접 등장시킴: 등장 가중치 0)  점수  등장   길이   속도   잡는시간
+                Make(SpeciesId.Crab,          "게",         1, 0.00f, 0.12f, 0.075f, 0.90f, true),
+                Make(SpeciesId.Seagull,       "갈매기",     0, 0.00f, 0.24f, 0.20f, 1.00f, false),
+                Make(SpeciesId.Hatchling,     "아기 거북",  1, 0.00f, 0.08f, 0.055f, 0.70f, true),
+                Make(SpeciesId.TurtleEgg,     "거북 알",    0, 0.00f, 0.06f, 0.00f, 1.00f, false),
             };
+        }
+
+        /// <summary>바다 생물 (뜰채 바다·바다 청소대·상어 구조대에 나오는 것)</summary>
+        public static bool IsSeaLife(SpeciesId id) { return id <= SpeciesId.Sardine; }
+
+        /// <summary>꼬리를 흔들며 헤엄치는 보통 물고기</summary>
+        public static bool IsFish(SpeciesId id)
+        {
+            switch (id)
+            {
+                case SpeciesId.Clownfish: case SpeciesId.BlueTang: case SpeciesId.Pufferfish: case SpeciesId.YellowTang:
+                case SpeciesId.Butterflyfish: case SpeciesId.Angelfish: case SpeciesId.Lionfish: case SpeciesId.Sardine:
+                    return true;
+                default: return false;
+            }
         }
 
         public static bool IsTrash(SpeciesId id) { return id >= SpeciesId.TrashBottle && id <= SpeciesId.TrashTire; }

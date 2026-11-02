@@ -126,7 +126,7 @@ namespace FishPond
         void SpawnFish()
         {
             var p = Dir(Random.value * 360f) * Mathf.Sqrt(Random.value) * R * 0.75f;
-            SpawnAt(PickSpecies(s => !SpeciesDefaults.IsTrash(s.id)), p, 0);
+            SpawnAt(PickSpecies(s => SpeciesDefaults.IsSeaLife(s.id)), p, 0);
         }
 
         /// <summary>쓰레기는 바다 가장자리에서 흘러 들어옴</summary>

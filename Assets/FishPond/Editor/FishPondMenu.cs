@@ -16,6 +16,7 @@ namespace FishPond.EditorTools
     ///   뜰채 바다   → Assets/FishPond/Scenes/FishPond.unity     → Builds/FishPond/FishPond.exe
     ///   상어 구조대 → Assets/FishPond/Scenes/SharkRescue.unity  → Builds/SharkRescue/SharkRescue.exe
     ///   바다 청소대 → Assets/FishPond/Scenes/OceanCleanup.unity → Builds/OceanCleanup/OceanCleanup.exe
+    ///   거북이 알 지키기 → Assets/FishPond/Scenes/TurtleNest.unity → Builds/TurtleNest/TurtleNest.exe
     /// </summary>
     [InitializeOnLoad]
     public static class FishPondMenu
@@ -23,6 +24,7 @@ namespace FishPond.EditorTools
         public const string ScenePath = "Assets/FishPond/Scenes/FishPond.unity";
         public const string SharkScenePath = "Assets/FishPond/Scenes/SharkRescue.unity";
         public const string CleanupScenePath = "Assets/FishPond/Scenes/OceanCleanup.unity";
+        public const string TurtleScenePath = "Assets/FishPond/Scenes/TurtleNest.unity";
         public const string CatalogPath = "Assets/FishPond/Resources/FishPond/SpeciesCatalog.asset";
         const string FreeAssetsUrl = "https://assetstore.unity.com/3d/characters/animals/fish?free=true&orderBy=6";
 
@@ -38,6 +40,7 @@ namespace FishPond.EditorTools
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;
             EnsureScene(SharkScenePath, typeof(SharkRescueGame), false);
             EnsureScene(CleanupScenePath, typeof(OceanCleanupGame), false);
+            EnsureScene(TurtleScenePath, typeof(TurtleNestGame), false);
             if (!string.IsNullOrEmpty(SceneManager.GetActiveScene().path)) return;
             if (File.Exists(ScenePath)) EditorSceneManager.OpenScene(ScenePath);
             else EnsureScene(ScenePath, typeof(FishPondGame), true);
@@ -68,6 +71,9 @@ namespace FishPond.EditorTools
         [MenuItem("Fish Pond/바다 청소대 씬 열기", priority = 2)]
         static void OpenCleanup() { OpenScene(CleanupScenePath, typeof(OceanCleanupGame)); }
 
+        [MenuItem("Fish Pond/거북이 알 지키기 씬 열기", priority = 3)]
+        static void OpenTurtle() { OpenScene(TurtleScenePath, typeof(TurtleNestGame)); }
+
         static void OpenScene(string path, System.Type game)
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
@@ -75,7 +81,7 @@ namespace FishPond.EditorTools
         }
 
         // ---------------------------------------------------------------- 실행파일
-        [MenuItem("Fish Pond/실행파일 만들기 (세 게임 모두)", priority = 10)]
+        [MenuItem("Fish Pond/실행파일 만들기 (네 게임 모두)", priority = 10)]
         public static void BuildAll()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
@@ -86,6 +92,8 @@ namespace FishPond.EditorTools
             bool b = Build("상어 구조대", SharkScenePath, "Builds/SharkRescue/SharkRescue.exe");
             EnsureScene(CleanupScenePath, typeof(OceanCleanupGame), false);
             b &= Build("바다 청소대", CleanupScenePath, "Builds/OceanCleanup/OceanCleanup.exe");
+            EnsureScene(TurtleScenePath, typeof(TurtleNestGame), false);
+            b &= Build("거북이 알 지키기", TurtleScenePath, "Builds/TurtleNest/TurtleNest.exe");
             if (!string.IsNullOrEmpty(current) && File.Exists(current)) EditorSceneManager.OpenScene(current);
             string msg = (a && b) ? "두 실행파일을 만들었습니다:\n" + Path.GetFullPath("Builds")
                                    : "빌드 중 오류가 있었습니다. Console 창을 확인하세요.";
@@ -102,11 +110,14 @@ namespace FishPond.EditorTools
         [MenuItem("Fish Pond/실행파일 만들기 - 바다 청소대만", priority = 13)]
         static void BuildCleanup() { EnsureScene(CleanupScenePath, typeof(OceanCleanupGame), false); Build("바다 청소대", CleanupScenePath, "Builds/OceanCleanup/OceanCleanup.exe"); }
 
+        [MenuItem("Fish Pond/실행파일 만들기 - 거북이 알 지키기만", priority = 14)]
+        static void BuildTurtle() { EnsureScene(TurtleScenePath, typeof(TurtleNestGame), false); Build("거북이 알 지키기", TurtleScenePath, "Builds/TurtleNest/TurtleNest.exe"); }
+
         static bool Build(string productName, string scene, string exePath)
         {
             var oldName = PlayerSettings.productName;
             // 이전 빌드가 중간에 멈춰 게임 이름이 남아 있으면 프로젝트 이름으로 되돌림
-            if (oldName == "뜰채 바다" || oldName == "상어 구조대" || oldName == "바다 청소대") oldName = "fish-pond-unity";
+            if (oldName == "뜰채 바다" || oldName == "상어 구조대" || oldName == "바다 청소대" || oldName == "거북이 알 지키기") oldName = "fish-pond-unity";
             var oldMode = PlayerSettings.fullScreenMode;
             try
             {
@@ -185,6 +196,11 @@ namespace FishPond.EditorTools
             { SpeciesId.TrashCup, new[] { "Plastic_Cup", "PlasticCup", "Coffee_Cup", "Paper_Cup", "Cup" } },
             { SpeciesId.TrashNet, new[] { "Fishing_Net", "FishingNet", "Ghost_Net", "Net_Pile" } },
             { SpeciesId.TrashTire, new[] { "Tire", "Tyre" } },
+            // 거북이 알 지키기
+            { SpeciesId.Crab, new[] { "Crab" } },
+            { SpeciesId.Seagull, new[] { "Seagull", "Gull" } },
+            { SpeciesId.Hatchling, new[] { "Hatchling", "Baby_Turtle", "Baby_Sea_Turtle" } },
+            { SpeciesId.TurtleEgg, new[] { "Turtle_Egg", "Egg" } },
         };
 
         /// <summary>
@@ -296,8 +312,7 @@ namespace FishPond.EditorTools
                 ApplyKnownFix(model, ref def.prefabSideView, ref def.prefabRotation);
                 // 바닥에 투사하므로 모든 생물은 위에서 내려다본 모습. 납작한 물고기는 옆구리가 살짝 보이게 기울임
                 def.prefabSideView = false;
-                bool flat = kv.Key == SpeciesId.SeaTurtle || kv.Key == SpeciesId.Stingray || kv.Key == SpeciesId.Octopus
-                            || kv.Key == SpeciesId.Jellyfish || kv.Key == SpeciesId.Squid || SpeciesDefaults.IsTrash(kv.Key);
+                bool flat = !SpeciesDefaults.IsFish(kv.Key);
                 def.prefabTilt = flat ? 0f : 30f;
                 var ctrl = FindController(used);
                 if (ctrl != null) def.animatorController = ctrl;
@@ -647,6 +662,7 @@ namespace FishPond.EditorTools
             PlayerPrefs.DeleteKey("FishPond.Settings.v2");
             PlayerPrefs.DeleteKey("SharkRescue.Settings.v1");
             PlayerPrefs.DeleteKey("OceanCleanup.Settings.v1");
+            PlayerPrefs.DeleteKey("TurtleNest.Settings.v1");
             Debug.Log("[FishPond] 저장된 운영 설정을 지웠습니다.");
         }
     }

@@ -64,6 +64,14 @@
 | 버려진 그물 | Fishing net (Rede de pesca) | alexmartire | https://sketchfab.com/3d-models/cab12e62c8dd46cdbb6b250c2a3c1306 |
 | 타이어 | Low-Poly Tire | TepidGames | https://sketchfab.com/3d-models/e6a6e6c4571b4635b647cdf0c31dbf43 |
 
+## 거북이 알 지키기 — Sketchfab, CC BY 4.0
+| 용도 | 모델 | 제작자 | 링크 |
+|---|---|---|---|
+| 게 | Dancing Crab - Uca Mjoebergi | Bohdan Lvov (@ostapblendercg) | https://sketchfab.com/3d-models/280863886fee409ab3c8168f07caa89f |
+| 갈매기 | Seagull | Dayvable | https://sketchfab.com/3d-models/dc42ffc81c86480e9e7f7752fa134174 |
+| 거북 알 (색은 게임에서 바꿈) | Egg | joe_carrot | https://sketchfab.com/3d-models/c46d64155bae47d4a0888cdfcf8c27dc |
+| 아기 거북 | 바다거북 모델(Model 53A - Flatback Sea Turtle)을 작게 사용 | — | 위 생물 표 참고 |
+
 ## OpenGameArt — CC0 (퍼블릭 도메인)
 | 용도 | 에셋 | 제작자 | 링크 |
 |---|---|---|---|
