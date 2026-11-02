@@ -351,6 +351,7 @@ namespace FishPond
             if (babyDef == null || babyDef.prefabOverride == null) return;
             var b = SpawnAt(babyDef, p, 1);
             if (b == null) return;
+            b.scaleMul = 1.4f;   // 바닥 투사에서 잘 보이게 조금 크게
             var a = AddAgent(b, Kind.Baby);
             // 둥지 바깥쪽으로, 조금씩 다른 방향
             a.dir = Mathf.Atan2(p.y, p.x) + Random.Range(-0.45f, 0.45f);
