@@ -206,7 +206,20 @@ namespace FishPond.EditorTools
             foreach (var guid in AssetDatabase.FindAssets("t:GameObject"))
                 existing.Add(Path.GetFileName(AssetDatabase.GUIDToAssetPath(guid)));
             var sizes = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
-            var files = Directory.GetFiles(downloads, "*.glb");
+            // 다운로드 폴더 바로 아래 + 한 단계 하위 폴더(Chrome 저장 위치가 Downloads\Asset 등인 경우).
+            // 하위 폴더는 최근 14일 안에 받은 파일만 봅니다 (예전 다른 작업 파일이 섞이지 않게).
+            var fileList = new List<string>(Directory.GetFiles(downloads, "*.glb"));
+            var recent = DateTime.Now.AddDays(-14);
+            foreach (var sub in Directory.GetDirectories(downloads))
+            {
+                try
+                {
+                    foreach (var f in Directory.GetFiles(sub, "*.glb"))
+                        if (File.GetLastWriteTime(f) >= recent) fileList.Add(f);
+                }
+                catch (Exception) { }
+            }
+            var files = fileList.ToArray();
             Array.Sort(files, StringComparer.OrdinalIgnoreCase);
             foreach (var f in files) sizes[Path.GetFileName(f)] = new FileInfo(f).Length;
             var log = new StringBuilder("[FishPond] 다운로드 폴더 glb 가져오기\n");
