@@ -231,8 +231,8 @@ MonoBehaviour:
     speed: 0.04
     holdMultiplier: 0.9
     catchable: 1
-    prefabOverride: {fileID: 0}
-    prefabSideView: 1
+    prefabOverride: {fileID: -6689036041284674117, guid: ca42ac239b665d84b9a97b3fe87e43cc, type: 3}
+    prefabSideView: 0
     prefabRotation: {x: 0, y: 0, z: 0}
     prefabTilt: 0
     prefabScale: 1
