@@ -132,7 +132,9 @@ namespace FishPond
         {
             Agent a;
             if (!agents.TryGetValue(c, out a)) return false;   // 바다 물고기는 잡지 않음
-            return (a.kind == Kind.Crab && !a.leaving) || a.kind == Kind.Baby;
+            // 게는 섬(모래) 위에 올라온 뒤에만 잡힘 (바다에 가만히 둔 뜰채에 저절로 걸리지 않게)
+            if (a.kind == Kind.Crab) return !a.leaving && c.pos.magnitude < islandR * 1.02f;
+            return a.kind == Kind.Baby;
         }
 
         // ================================================================ 배경: 바다 + 가운데 모래섬
