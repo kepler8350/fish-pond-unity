@@ -54,6 +54,16 @@
 | Purple Seashell | Meerschaum Digital | https://sketchfab.com/3d-models/04d9983ba04242fe99182d4506ea0714 |
 | Seashell | yaocheng | https://sketchfab.com/3d-models/9b59afbf4a694e8cb6daa0e0235cff86 |
 
+## 바다 청소대 쓰레기 — Sketchfab, CC BY 4.0
+| 쓰레기 | 모델 | 제작자 | 링크 |
+|---|---|---|---|
+| 페트병 | Plastic Water Bottle | Jeremy E. Grayson (@JeremyGrayson) | https://sketchfab.com/3d-models/efa1c4c1f2a947659ded2e61e20eff31 |
+| 비닐봉지 | Trash Bag v2 free | George B (@JuliaSanzio) | https://sketchfab.com/3d-models/9ef36ddf03bb4db99bc32a369cc2c871 |
+| 음료 캔 | Soda Can crushed trash Low-poly | rzaletskyy | https://sketchfab.com/3d-models/5ad17d589a6a41fc8905a576871e77ba |
+| 컵 | Paper Coffee Cup | korboleevd | https://sketchfab.com/3d-models/e77b65a844324452a385bf4c1275515f |
+| 버려진 그물 | Fishing net (Rede de pesca) | alexmartire | https://sketchfab.com/3d-models/cab12e62c8dd46cdbb6b250c2a3c1306 |
+| 타이어 | Low-Poly Tire | TepidGames | https://sketchfab.com/3d-models/e6a6e6c4571b4635b647cdf0c31dbf43 |
+
 ## OpenGameArt — CC0 (퍼블릭 도메인)
 | 용도 | 에셋 | 제작자 | 링크 |
 |---|---|---|---|

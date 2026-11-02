@@ -180,7 +180,7 @@ namespace FishPond.EditorTools
             { SpeciesId.Jellyfish, new[] { "Jellyfish" } },
             // 바다 청소대 쓰레기
             { SpeciesId.TrashBottle, new[] { "Plastic_Bottle", "PlasticBottle", "Water_Bottle", "Bottle" } },
-            { SpeciesId.TrashBag, new[] { "Plastic_Bag", "PlasticBag", "Shopping_Bag", "Carrier_Bag" } },
+            { SpeciesId.TrashBag, new[] { "Trash_Bag", "Plastic_Bag", "PlasticBag", "Shopping_Bag", "Carrier_Bag" } },
             { SpeciesId.TrashCan, new[] { "Soda_Can", "SodaCan", "Coke_Can", "Beer_Can", "Drink_Can", "Aluminum_Can" } },
             { SpeciesId.TrashCup, new[] { "Plastic_Cup", "PlasticCup", "Coffee_Cup", "Paper_Cup", "Cup" } },
             { SpeciesId.TrashNet, new[] { "Fishing_Net", "FishingNet", "Ghost_Net", "Net_Pile" } },
