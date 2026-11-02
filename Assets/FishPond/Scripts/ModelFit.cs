@@ -73,7 +73,17 @@ namespace FishPond
             foreach (var cam in instance.GetComponentsInChildren<Camera>(true)) cam.enabled = false;
             foreach (var lt in instance.GetComponentsInChildren<Light>(true)) lt.enabled = false;
 
-            var renderers = instance.GetComponentsInChildren<Renderer>(true);
+            var all = instance.GetComponentsInChildren<Renderer>(true);
+            // 모델에 딸려 온 바닥판(그림자·AO 바닥 등)은 숨김: 크기 맞춤이 바닥판에 맞춰져 생물이 작아지는 것 방지
+            var kept = new System.Collections.Generic.List<Renderer>();
+            foreach (var r in all)
+            {
+                if (r != null && IsGroundPlate(r)) { r.enabled = false; continue; }
+                kept.Add(r);
+            }
+            // 전부 바닥판처럼 보이면(모래 바닥 모델 등) 그대로 둠
+            if (kept.Count == 0) { foreach (var r in all) if (r != null) { r.enabled = true; kept.Add(r); } }
+            var renderers = kept.ToArray();
             FixMaterials(renderers);
 
             // 애니메이션: 메카님(Animator)과 레거시(Animation, glTF 가져오기 기본값) 모두 반복 재생
@@ -105,6 +115,22 @@ namespace FishPond
             }
 
             return renderers;
+        }
+
+        static readonly string[] GroundWords = { "aofloor", "ao_floor", "floor", "ground", "shadowplane", "shadow_plane", "pplane" };
+
+        /// <summary>이름이나 재질 이름으로 보아 바닥판·그림자판인가</summary>
+        static bool IsGroundPlate(Renderer r)
+        {
+            string n = r.gameObject.name.ToLowerInvariant();
+            foreach (var w in GroundWords) if (n.Contains(w)) return true;
+            var m = r.sharedMaterial;
+            if (m != null)
+            {
+                string mn = m.name.ToLowerInvariant();
+                foreach (var w in GroundWords) if (mn.Contains(w)) return true;
+            }
+            return false;
         }
 
         /// <summary>모델에 실제로 움직이는 애니메이션이 들어 있는지</summary>
