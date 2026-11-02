@@ -158,7 +158,7 @@ namespace FishPond
 
             // 움직임이 없는 물고기 모델은 헤엄 셰이더로 꼬리·지느러미를 흔듦
             bool fish = !(def.id == SpeciesId.SeaTurtle || def.id == SpeciesId.Stingray || def.id == SpeciesId.Octopus
-                          || def.id == SpeciesId.Jellyfish || def.id == SpeciesId.Squid);
+                          || def.id == SpeciesId.Jellyfish || def.id == SpeciesId.Squid || SpeciesDefaults.IsTrash(def.id));
             if (fish && !ModelFit.HasAnimation(instance))
                 swimRenderers = ModelFit.ApplySwim(renderers, root.TransformDirection(Vector3.right), root.TransformDirection(Vector3.up), 0.09f);
         }

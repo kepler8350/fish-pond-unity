@@ -8,7 +8,9 @@ namespace FishPond
     {
         Clownfish, BlueTang, Pufferfish, Squid, Octopus, Jellyfish,
         YellowTang, Butterflyfish, Angelfish, Lionfish, Stingray, SeaTurtle,
-        Sardine
+        Sardine,
+        // 바다 청소대의 쓰레기
+        TrashBottle, TrashBag, TrashCan, TrashCup, TrashNet, TrashTire
     }
 
     /// <summary>배경 장식 종류</summary>
@@ -95,8 +97,17 @@ namespace FishPond
                 Make(SpeciesId.Stingray,      "가오리",     5, 0.20f, 0.22f, 0.20f, 1.20f, true),
                 Make(SpeciesId.SeaTurtle,     "바다거북",   7, 0.10f, 0.25f, 0.10f, 1.40f, true),
                 Make(SpeciesId.Jellyfish,     "해파리",     0, 0.00f, 0.15f, 0.06f, 1.00f, false),
+                // 쓰레기 (바다 청소대에서만 등장)                 점수  등장   길이   떠다님 잡는시간
+                Make(SpeciesId.TrashBottle,   "페트병",     2, 1.00f, 0.14f, 0.05f, 1.00f, true),
+                Make(SpeciesId.TrashBag,      "비닐봉지",   3, 0.80f, 0.17f, 0.07f, 1.10f, true),
+                Make(SpeciesId.TrashCan,      "음료 캔",    1, 1.00f, 0.09f, 0.04f, 0.90f, true),
+                Make(SpeciesId.TrashCup,      "플라스틱 컵", 1, 0.80f, 0.09f, 0.05f, 0.90f, true),
+                Make(SpeciesId.TrashNet,      "버려진 그물", 4, 0.40f, 0.22f, 0.03f, 1.30f, true),
+                Make(SpeciesId.TrashTire,     "타이어",     5, 0.25f, 0.18f, 0.02f, 1.50f, true),
             };
         }
+
+        public static bool IsTrash(SpeciesId id) { return id >= SpeciesId.TrashBottle && id <= SpeciesId.TrashTire; }
 
         static SpeciesDef Make(SpeciesId id, string name, int pts, float weight, float len, float spd, float hold, bool catchable)
         {

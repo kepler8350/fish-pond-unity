@@ -216,6 +216,7 @@ namespace FishPond
             env = new GameObject("Environment").transform;
             env.SetParent(stage, false);
             swayers.Clear();
+            livingDecor.Clear();
             BuildEnvironment();
             LayoutTexts();
         }
@@ -448,6 +449,9 @@ namespace FishPond
             }
         }
 
+        /// <summary>놓인 산호·말미잘 (바다 청소대에서 산호 건강 표시에 씀)</summary>
+        protected readonly List<Transform> livingDecor = new List<Transform>();
+
         /// <summary>3D 장식 하나 놓기. sway = 물결에 살랑임</summary>
         protected Transform PlaceDecor(System.Random rnd, DecorKind kind, Vector2 p, float size, float zFront, float maxDepth, bool sway)
         {
@@ -455,6 +459,7 @@ namespace FishPond
             if (d == null) return null;
             float yaw = (float)rnd.NextDouble() * 360f;
             var t = Decor.Place(d, env, p, size, yaw, zFront, maxDepth);
+            if (t != null && (kind == DecorKind.Coral || kind == DecorKind.Anemone || kind == DecorKind.Seaweed)) livingDecor.Add(t);
             if (t != null && sway)
                 swayers.Add(new Swayer { t = t, baseScale = t.localScale, phase = (float)rnd.NextDouble() * 10f, baseRot = yaw });
             return t;

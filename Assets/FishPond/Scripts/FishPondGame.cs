@@ -101,7 +101,7 @@ namespace FishPond
             SpawnAt(def, p, 0);
         }
 
-        SpeciesDef PickAny() { return PickSpecies(s => true); }
+        SpeciesDef PickAny() { return PickSpecies(s => !SpeciesDefaults.IsTrash(s.id)); }
 
         protected override void UpdateGame(float dt)
         {

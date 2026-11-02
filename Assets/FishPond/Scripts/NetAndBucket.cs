@@ -167,10 +167,10 @@ namespace FishPond
             textRoot.localRotation = Quaternion.Euler(0, 0, rotDeg);
         }
 
-        public void SetScore(int points, int count)
+        public void SetScore(int points, int count, string unit = "마리")
         {
             score.Text = points.ToString();
-            label.Text = PondGame.PlayerNames[id] + " · " + count + "마리";
+            label.Text = PondGame.PlayerNames[id] + " · " + count + unit;
         }
 
         public void SetRank(string text, Color c)

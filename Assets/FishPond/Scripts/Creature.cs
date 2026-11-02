@@ -115,7 +115,10 @@ namespace FishPond
                         case SpeciesId.Squid: SwimSquid(dt, g); break;
                         case SpeciesId.Octopus: SwimOctopus(dt, g); break;
                         case SpeciesId.Jellyfish: SwimJelly(dt, g); break;
-                        default: SwimFish(dt, g); break;
+                        default:
+                            if (SpeciesDefaults.IsTrash(def.id)) DriftTrash(dt, g);
+                            else SwimFish(dt, g);
+                            break;
                     }
                     break;
 
@@ -163,6 +166,24 @@ namespace FishPond
                 }
             }
             Render(dt, g);
+        }
+
+        // ------------------------------------------------------------ 쓰레기: 물결 따라 천천히 떠다니며 빙글 돎
+        float spin;
+        public bool IsTrash { get { return SpeciesDefaults.IsTrash(def.id); } }
+
+        void DriftTrash(float dt, PondGame g)
+        {
+            float R = g.R;
+            wanderT -= dt;
+            if (wanderT <= 0f || (target - pos).magnitude < R * 0.08f) { NewTarget(R); wanderT = Random.Range(5f, 9f); }
+            if (spin == 0f) spin = Random.Range(0.15f, 0.45f) * (Random.value < 0.5f ? -1f : 1f);
+            var want = (target - pos).normalized * def.speed * R;
+            vel += (want - vel) * (1f - Mathf.Exp(-dt * 0.6f));
+            pos += vel * dt;
+            heading += spin * dt;
+            swimAnim = 0f;
+            ClampInPond(R, 0.92f);
         }
 
         // ------------------------------------------------------------ 흰동가리 · 블루탱 · 복어
